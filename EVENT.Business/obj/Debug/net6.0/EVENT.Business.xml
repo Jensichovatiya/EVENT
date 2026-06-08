@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EVENT.Business</name>
+    </assembly>
+    <members>
+        <member name="P:EVENT.Business.Login.VerifyOtpRequest.NewPassword">
+            <summary>
+            In case of Change Password With Otp
+            </summary>
+        </member>
+    </members>
+</doc>

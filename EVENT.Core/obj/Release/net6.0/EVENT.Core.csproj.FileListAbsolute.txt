@@ -1,0 +1,15 @@
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\bin\Release\net6.0\EVENT.Core.deps.json
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\bin\Release\net6.0\EVENT.Core.dll
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\bin\Release\net6.0\EVENT.Core.pdb
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\bin\Release\net6.0\EVENT.Core.xml
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.csproj.AssemblyReference.cache
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.AssemblyInfoInputs.cache
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.AssemblyInfo.cs
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.csproj.CoreCompileInputs.cache
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.sourcelink.json
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.dll
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\refint\EVENT.Core.dll
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.xml
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\EVENT.Core.pdb
+D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Release\net6.0\ref\EVENT.Core.dll
