@@ -20,3 +20,25 @@ D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.xml
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.pdb
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\ref\EVENT.Business.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Business.deps.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Business.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Business.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Business.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Core.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Core.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.csproj.AssemblyReference.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.GeneratedMSBuildEditorConfig.editorconfig
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.AssemblyInfoInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.AssemblyInfo.cs
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.csproj.CoreCompileInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.sourcelink.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Bu.9BCC218B.Up2Date
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\refint\EVENT.Business.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\ref\EVENT.Business.dll

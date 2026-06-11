@@ -1,4 +1,4 @@
-﻿using Dapper;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -71,13 +71,13 @@ namespace EVENT.DAL.Repository
                     newOtp = "888888";
                 }
 
-                string squery = "EXEC USP_Login_User @MobileNo, @DialCode, @OTP, @DeviceId";
+                string squery = "EXEC USP_Login @UserName, @DeviceId, @FCM_Token, @IPAddress, @CreatedFrom";
                 var param = new DynamicParameters();
-                param.Add("@MobileNo", login.MobileNo);
-                param.Add("@DialCode", login.DialCode);
-                param.Add("@OTP", newOtp);
+                param.Add("@UserName", login.MobileNo);
                 param.Add("@DeviceId", login.DeviceId);
-               /* param.Add("@FCMToken", login.FCMToken);*/
+                param.Add("@FCM_Token", null);
+                param.Add("@IPAddress", null);
+                param.Add("@CreatedFrom", "WebAPI");
 
                 var sres = await QueryFirstOrDefaultAsync<ResponseItem>(squery, param);
 
@@ -125,44 +125,56 @@ namespace EVENT.DAL.Repository
             UserLoginResponse response = new UserLoginResponse();
             try
             {
-                string squery = "EXEC USP_User_Login_Otp_Verify @OTP, @MobileNo, @DeviceId ";
+                var user = await QueryFirstOrDefaultAsync<Tracket_Master_User>("SELECT UserId FROM Tracket_Master_User WHERE MobileNo = @MobileNo AND IsDeleted = 0", new { MobileNo = otp.MobileNo });
+                if (user == null) {
+                    response.Status = false;
+                    response.Message = "User not found.";
+                    return response;
+                }
+
+                string squery = "EXEC USP_VerifyOTP @UserId, @OTP, @Purpose, @UpdatedFrom";
                 var param = new DynamicParameters();
-                param.Add("@OTP", otp.OTP); 
-                param.Add("@MobileNo", otp.MobileNo); 
-                param.Add("@DeviceId", otp.DeviceId); 
-                var sres = await QueryFirstOrDefaultAsync<UserLoginResponse>(squery, param);
+                param.Add("@UserId", user.UserId);
+                param.Add("@OTP", otp.OTP);
+                param.Add("@Purpose", "Register");
+                param.Add("@UpdatedFrom", "WebAPI");
+                var sres = await QueryFirstOrDefaultAsync<ResponseItem>(squery, param);
 
-                if (sres != null)
+                if (sres != null && sres.Status)
                 {
-                    var Token = GenerateToken(sres);
+                    var userLoginInfo = await QueryFirstOrDefaultAsync<UserLoginResponse>(@"
+                        SELECT U.UserId, U.Name, U.MobileNo, U.EmailId, U.UserType, U.UserRole
+                        FROM Tracket_Master_User U
+                        WHERE U.UserId = @UserId", new { UserId = user.UserId });
 
-                    string sqlQuery = "EXEC USP_User_Login_NewToken_Update @MobileNo, @DeviceId, @Token, @FCMToken";
-                    var newTokenParam = new DynamicParameters();
-                    newTokenParam.Add("@MobileNo", otp.MobileNo);
-                    newTokenParam.Add("@DeviceId", otp.DeviceId);
-                    newTokenParam.Add("@Token", Token);
-                    newTokenParam.Add("@FCMToken", otp.FCMToken);
-                    var TokenUpdateResult = await QueryFirstOrDefaultAsync<UserLoginResponse>(sqlQuery, newTokenParam);
+                    if (userLoginInfo != null)
+                    {
+                        var Token = GenerateToken(userLoginInfo);
 
-                    if (TokenUpdateResult != null) {
+                        string sqlQuery = "UPDATE Tracket_Master_User_Login SET Token = @Token, FCM_Token = @FCMToken WHERE UserId = @UserId";
+                        var tokenParams = new DynamicParameters();
+                        tokenParams.Add("@UserId", user.UserId);
+                        tokenParams.Add("@Token", Token);
+                        tokenParams.Add("@FCMToken", otp.FCMToken);
+                        await ExecuteAsync<int>(sqlQuery, tokenParams);
 
-                        response.Status = TokenUpdateResult.Status;
-                        response.Message = TokenUpdateResult.Message;
+                        response.Status = true;
+                        response.Message = "OTP verified successfully.";
                         response.Token = Token;
-                        response.UserId = sres.UserId;
-                        response.UserRole = sres.UserRole;
-                        response.UserSubRole = sres.UserSubRole;
-                        response.MobileNo = sres.MobileNo;
+                        response.UserId = userLoginInfo.UserId;
+                        response.UserRole = userLoginInfo.UserRole;
+                        response.MobileNo = userLoginInfo.MobileNo;
                     }
-                    else {
+                    else
+                    {
                         response.Status = false;
-                        response.Message = "New token not updated.";
+                        response.Message = "User details not found.";
                     }
                 }
                 else
                 {
                     response.Status = false;
-                    response.Message = "OTP not verified.";
+                    response.Message = sres?.Message ?? "OTP not verified.";
                 }
             }
             catch (Exception ex)
@@ -222,9 +234,9 @@ namespace EVENT.DAL.Repository
             try
             {
                 string squery = @"
-                    IF EXISTS (SELECT * FROM tbl_Master_User_Login WHERE UserId = @UserId AND UserName = @MobileNo)
+                    IF EXISTS (SELECT * FROM Tracket_Master_User_Login WHERE UserId = @UserId AND UserName = @MobileNo)
                     BEGIN
-                        UPDATE tbl_Master_User_Login 
+                        UPDATE Tracket_Master_User_Login 
                         SET Token = @Token 
                         WHERE UserName = @MobileNo AND UserId = @UserId;
     
@@ -320,7 +332,7 @@ namespace EVENT.DAL.Repository
 
         public async Task<UserLoginToken> GetUserToken(int UserId) {
             try {
-                var token = await QueryFirstOrDefaultAsync<UserLoginToken>("select  top 1 Id as LoginId, Token,  LastActivityTime from tblLoginMaster  Where UserId = @UserId and IsDeleted = 0", new { UserId });
+                var token = await QueryFirstOrDefaultAsync<UserLoginToken>("select  top 1 LoginId, Token,  LastActivityTime from Tracket_Master_User_Login  Where UserId = @UserId and IsDeleted = 0", new { UserId });
                 return token;
             }
             catch (Exception ex) {
@@ -329,7 +341,7 @@ namespace EVENT.DAL.Repository
         }
         public async Task<bool> UpdateUserLastActivityTime(int loginId) {
             try {
-                var query = "update tblLoginMaster set LastActivityTime = getdate() where Id = @Id ";
+                var query = "update Tracket_Master_User_Login set LastActivityTime = getdate() where LoginId = @Id ";
                 var res = await ExecuteAsync<int>(query, new { Id = loginId });
                 return res > 0;
             }

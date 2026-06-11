@@ -1,4 +1,4 @@
-﻿using EVENT.Business.BusinessClass.InputModels;
+using EVENT.Business.BusinessClass.InputModels;
 using EVENT.Business.Login;
 using EVENT.Core.Common.Enum;
 using EVENT.DAL.IRepository;
@@ -35,7 +35,7 @@ namespace EVENT.WebAPI.Controllers {
             _config = config;
             _httpContext = httpContext;
         }
-
+#region  Login
         [AllowAnonymous]
         [HttpPost]
         [Route("Login")]
@@ -133,5 +133,6 @@ namespace EVENT.WebAPI.Controllers {
             var result = await _repository.ValidateReferralCode(RefferalCode);
             return Ok(result);
         }
+        #endregion
     }
 }

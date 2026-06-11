@@ -254,6 +254,7 @@ app.UseStaticFiles(new StaticFileOptions {
     FileProvider = compositeProvider,
     RequestPath = "/" + builder.Configuration["ApplicationSettings:EventImageFolderPath"].ToString()
 });
+app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<JWTMiddleware>();
 //app.UseMiddleware<UserDetailMiddleware>();

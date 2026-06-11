@@ -25,3 +25,30 @@ D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\refin
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.xml
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.pdb
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\ref\EVENT.DAL.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\Resources\accountVerifiedWithPassword.txt
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\Resources\confirmMailAddress.txt
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.deps.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.AssemblyReference.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.GeneratedMSBuildEditorConfig.editorconfig
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.AssemblyInfoInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.AssemblyInfo.cs
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.CoreCompileInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.sourcelink.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.Up2Date
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\refint\EVENT.DAL.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\ref\EVENT.DAL.dll

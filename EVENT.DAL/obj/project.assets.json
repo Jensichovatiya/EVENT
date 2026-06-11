@@ -1008,7 +1008,10 @@
         },
         "runtime": {
           "bin/placeholder/EVENT.Business.dll": {}
-        }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
       },
       "EVENT.Core/1.0.0": {
         "type": "project",

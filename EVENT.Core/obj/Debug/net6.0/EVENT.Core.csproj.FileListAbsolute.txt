@@ -13,3 +13,18 @@ D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\refi
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.xml
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.pdb
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\ref\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\bin\Debug\net6.0\EVENT.Core.deps.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\bin\Debug\net6.0\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\bin\Debug\net6.0\EVENT.Core.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\bin\Debug\net6.0\EVENT.Core.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.csproj.AssemblyReference.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.AssemblyInfoInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.AssemblyInfo.cs
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.csproj.CoreCompileInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.sourcelink.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\refint\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\ref\EVENT.Core.dll

@@ -17,3 +17,22 @@ D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.xml
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.pdb
 D:\CassowaryTechnology\Jensi\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\ref\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Entities.deps.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Entities.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Entities.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Core.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Core.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\bin\Debug\net6.0\EVENT.Core.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.csproj.AssemblyReference.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.GeneratedMSBuildEditorConfig.editorconfig
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.AssemblyInfoInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.AssemblyInfo.cs
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.csproj.CoreCompileInputs.cache
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.sourcelink.json
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.En.37C42473.Up2Date
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\refint\EVENT.Entities.dll
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.xml
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\EVENT.Entities.pdb
+D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Entities\obj\Debug\net6.0\ref\EVENT.Entities.dll

@@ -143,7 +143,7 @@ export default function UserApp({ session, setToast }: UserAppProps) {
                         cursor: 'pointer',
                         display: 'flex',
                         alignItems: 'center',
-                        justify: 'center'
+                        justifyContent: 'center'
                       }}
                     >
                       <i className="fa-solid fa-heart"></i>

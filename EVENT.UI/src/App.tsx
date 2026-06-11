@@ -1,120 +1,78 @@
-/// <reference path="./types.d.ts" />
-import React, { useState, useEffect } from 'react';
-import LoginPage from './pages/LoginPage';
-import SignUpPage from './pages/SignUpPage';
-import VerifyOtpPage from './pages/VerifyOtpPage';
-import DashboardPage from './pages/DashboardPage';
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { Provider } from 'react-redux';
+import { createTheme, ThemeProvider, CssBaseline } from '@mui/material';
+import { Toaster } from 'sonner';
+import { store } from './redux/store';
+import AppRoutes from './routes/AppRoutes';
+import ErrorBoundary from './components/ErrorBoundary';
 
-interface SessionState {
-  token: string | null;
-  userRole: string | null;
-  userName: string | null;
-  userId: string | null;
-  mobileNo: string | null;
-}
-
-interface ToastState {
-  type: 'success' | 'error';
-  message: string;
-}
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#3b82f6',
+      dark: '#2563eb',
+      light: '#60a5fa',
+    },
+    secondary: {
+      main: '#8b5cf6',
+      dark: '#7c3aed',
+      light: '#a78bfa',
+    },
+    background: {
+      default: '#f8fafc',
+      paper: '#ffffff',
+    },
+    text: {
+      primary: '#0f172a',
+      secondary: '#475569',
+    },
+  },
+  typography: {
+    fontFamily: '"Outfit", "Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    h5: {
+      fontWeight: 800,
+    },
+    h6: {
+      fontWeight: 600,
+    },
+    button: {
+      textTransform: 'none',
+      fontWeight: 600,
+    },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          padding: '8px 16px',
+        },
+      },
+    },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          borderRadius: 12,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.03)',
+        },
+      },
+    },
+  },
+});
 
 export default function App() {
-  const [page, setPage] = useState<string>('login');
-  const [toast, setToast] = useState<ToastState | null>(null);
-  const [verifyData, setVerifyData] = useState<{ dialCode: string; mobileNo: string } | null>({ dialCode: '+91', mobileNo: '' });
-  
-  const [session, setSession] = useState<SessionState>({
-    token: localStorage.getItem('authToken'),
-    userRole: localStorage.getItem('userRole'),
-    userName: localStorage.getItem('userName'),
-    userId: localStorage.getItem('userId'),
-    mobileNo: localStorage.getItem('mobileNo'),
-  });
-
-  useEffect(() => {
-    if (session.token) {
-      setPage('home');
-    }
-  }, [session.token]);
-
-  useEffect(() => {
-    if (toast) {
-      const timer = setTimeout(() => setToast(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toast]);
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userName');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('mobileNo');
-    setSession({
-      token: null,
-      userRole: null,
-      userName: null,
-      userId: null,
-      mobileNo: null,
-    });
-    setToast({ type: 'success', message: 'Logged out successfully.' });
-    setPage('login');
-  };
-
-  const handleNavigate = (targetPage: string) => {
-    if (targetPage === 'home') {
-      setSession({
-        token: localStorage.getItem('authToken'),
-        userRole: localStorage.getItem('userRole'),
-        userName: localStorage.getItem('userName'),
-        userId: localStorage.getItem('userId'),
-        mobileNo: localStorage.getItem('mobileNo'),
-      });
-    }
-    setPage(targetPage);
-  };
-
   return (
-    <div className="app-container">
-      {page === 'login' && (
-        <LoginPage
-          onNavigate={handleNavigate}
-          setToast={setToast}
-          setVerifyData={setVerifyData}
-        />
-      )}
-
-      {page === 'signup' && (
-        <SignUpPage
-          onNavigate={handleNavigate}
-          setToast={setToast}
-          setVerifyData={setVerifyData}
-        />
-      )}
-
-      {page === 'verify-otp' && (
-        <VerifyOtpPage
-          onNavigate={handleNavigate}
-          setToast={setToast}
-          verifyData={verifyData}
-        />
-      )}
-
-      {page === 'home' && (
-        <DashboardPage
-          session={session}
-          onLogout={handleLogout}
-          setToast={setToast}
-        />
-      )}
-
-      {/* Global Toast Alerts */}
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          <i className={toast.type === 'error' ? 'fa-solid fa-circle-exclamation' : 'fa-solid fa-circle-check'} style={{ color: toast.type === 'error' ? '#ef4444' : '#10b981', fontSize: '1.1rem' }}></i>
-          <span>{toast.message}</span>
-        </div>
-      )}
-    </div>
+    <ErrorBoundary>
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <Toaster richColors position="top-right" />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ThemeProvider>
+      </Provider>
+    </ErrorBoundary>
   );
 }

@@ -1,9 +1,11 @@
-﻿using EVENT.DAL;
+using EVENT.DAL;
+using INvoice.Models;
 
 namespace EVENT.WebApi {
     public static class RegisterService {
         public static void RegisterServices(IServiceCollection services) { 
 
+            services.AddScoped<IGeneralFunctions, GeneralFunctions>();
             Configure(services, RepositoryRegistor.GetTypes()); 
         }
 
@@ -11,9 +13,5 @@ namespace EVENT.WebApi {
             foreach (var type in types)
                 services.AddScoped(type.Key, type.Value);
         }
-
-        //public static void ConfigureLoggerService(this IServiceCollection services) {
-        //    services.AddSingleton<ILoggerManager, LoggerManager>();
-        //}
     }
 }
