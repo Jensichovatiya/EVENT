@@ -29,7 +29,7 @@ export const EventBlueprintStep: React.FC<EventBlueprintStepProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [blueprint, setBlueprint] = useState<any>(null);
-  
+
   // Lists
   const [zones, setZones] = useState<any[]>([]);
   const [selectedZone, setSelectedZone] = useState<any | null>(null);
@@ -241,7 +241,7 @@ export const EventBlueprintStep: React.FC<EventBlueprintStepProps> = ({
       if (res.success && res.data) {
         const savedId = Number(res.data);
         toast.success(res.message || 'Zone properties saved.');
-        
+
         // Update local zone state
         const updatedZones = zones.map(z => z.id === selectedZone.id ? {
           ...z,
@@ -407,7 +407,7 @@ export const EventBlueprintStep: React.FC<EventBlueprintStepProps> = ({
       </Alert>
 
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '3fr 2fr' }, gap: 3.5 }}>
-        
+
         {/* Left Side: Designer Canvas */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
           <BlueprintDesigner

@@ -80,7 +80,8 @@ export default function VerifyOtp({ onNavigate, setToast, verifyData }: VerifyOt
         localStorage.setItem('userRole', response.userRole || 'EventOrganizer');
         localStorage.setItem('userId', response.userId || '');
         localStorage.setItem('mobileNo', response.mobileNo || mobileNo);
-        localStorage.setItem('userName', response.userName || 'Organizer');
+        localStorage.setItem('userName', response.name || response.userName || 'Organizer');
+        localStorage.setItem('email', response.email || response.emailId || '');
 
         setTimeout(() => {
           onNavigate('dashboard');

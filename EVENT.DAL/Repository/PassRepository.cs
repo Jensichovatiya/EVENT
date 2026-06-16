@@ -78,11 +78,19 @@ namespace EVENT.DAL.Repository
             }
         }
 
-        public async Task<ApiResponseModel<PassResponse>> GetPassByIdAsync(long passId)
+        public async Task<ApiResponseModel<PassResponse>> GetPassByIdAsync(long passId, long? userId = null, int? userRole = null)
         {
             try
             {
                 var parameters = new Dictionary<string, object> { { "@PassId", passId } };
+                if (userId.HasValue)
+                {
+                    parameters.Add("@UserId", userId.Value);
+                }
+                if (userRole.HasValue)
+                {
+                    parameters.Add("@UserRole", userRole.Value);
+                }
                 DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetPassDetails", parameters);
 
                 if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
@@ -270,6 +278,45 @@ namespace EVENT.DAL.Repository
             catch (Exception ex)
             {
                 return new ApiResponseModel<List<AttendanceReportResponse>>
+                {
+                    Success = false,
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Errors = new List<string> { ex.StackTrace ?? "" }
+                };
+            }
+        }
+
+        public async Task<ApiResponseModel<List<PassResponse>>> GetUserPassesAsync(long userId, int? userRole = null)
+        {
+            try
+            {
+                var parameters = new Dictionary<string, object> { { "@UserId", userId } };
+                if (userRole.HasValue)
+                {
+                    parameters.Add("@UserRole", userRole.Value);
+                }
+                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetUserPasses", parameters);
+                var list = new List<PassResponse>();
+
+                if (ds != null && ds.Tables.Count > 0)
+                {
+                    list = ds.Tables[0].AsEnumerable()
+                        .Select(row => DataRowToObject.CreateItemFromRow<PassResponse>(row))
+                        .ToList();
+                }
+
+                return new ApiResponseModel<List<PassResponse>>
+                {
+                    Success = true,
+                    StatusCode = 200,
+                    Message = "User passes retrieved successfully.",
+                    Data = list
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel<List<PassResponse>>
                 {
                     Success = false,
                     StatusCode = 500,

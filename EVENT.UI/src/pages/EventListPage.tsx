@@ -8,6 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { eventApi } from '../api/eventApi';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { ROUTES, ROLES } from '../constants/appConstants';
@@ -45,7 +46,16 @@ export const EventListPage: React.FC = () => {
     const newName = prompt('Enter name for the duplicated event:');
     if (!newName) return;
     try {
-      const res = await eventApi.duplicateEvent({ eventRId, newEventName: newName });
+      const userStr = localStorage.getItem('user');
+      const userObj = userStr ? JSON.parse(userStr) : null;
+      const userEmail = localStorage.getItem('email') || userObj?.emailId || userObj?.email || userObj?.userName || 'system';
+      
+      const res = await eventApi.duplicateEvent({ 
+        eventRId, 
+        newEventName: newName,
+        createdBy: userEmail,
+        createdFrom: 'WebUI'
+      });
       toast.success(res.message || 'Event duplicated successfully.');
       fetchEvents();
     } catch (err: any) {
@@ -81,15 +91,18 @@ export const EventListPage: React.FC = () => {
       header: 'Actions',
       accessor: (row: any) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <IconButton size="small" onClick={() => navigate(ROUTES.EVENT_DETAILS.replace(':id', row.eventRId || row.eventId))}>
+          <IconButton size="small" onClick={() => navigate(ROUTES.EVENT_DETAILS.replace(':id', String(row.eventId)))}>
             <VisibilityIcon fontSize="small" style={{ color: '#3b82f6' }} />
           </IconButton>
           {(role === ROLES.SUPER_ADMIN || role === ROLES.ORGANIZER) && (
             <>
-              <IconButton size="small" onClick={() => navigate(ROUTES.EVENT_EDIT.replace(':id', row.eventRId || row.eventId))}>
+              <IconButton size="small" onClick={() => navigate(ROUTES.EVENT_EDIT.replace(':id', String(row.eventId)))}>
                 <EditIcon fontSize="small" style={{ color: '#10b981' }} />
               </IconButton>
-              <IconButton size="small" onClick={() => handleDuplicate(row.eventRId || row.eventId)}>
+              <IconButton size="small" title="Manage Slots" onClick={() => navigate(ROUTES.EVENT_SLOTS.replace(':id', String(row.eventId)))}>
+                <CalendarMonthIcon fontSize="small" style={{ color: '#8b5cf6' }} />
+              </IconButton>
+              <IconButton size="small" onClick={() => handleDuplicate(row.eventRId || String(row.eventId))}>
                 <FileCopyIcon fontSize="small" style={{ color: '#f59e0b' }} />
               </IconButton>
             </>

@@ -19,8 +19,31 @@ export interface AssetDDL {
   assetTypes: DropdownOption[];
 }
 
+export interface ZoneOption {
+  value: number;
+  label: string;
+  seatPrice: number;
+  capacity: number;
+  blueprintId: number;
+  eventId: number;
+}
+
+export interface EventSlotDropdownOption {
+  value: number;
+  label: string;
+  slotId: number;
+  eventId: number;
+  eventName: string;
+  slotDate: string;
+  startTime: string;
+  endTime: string;
+  slotName: string;
+  ticketPrice: number;
+}
+
 export interface BookingDDL {
-  events: DropdownOption[];
+  eventSlots: EventSlotDropdownOption[];
+  zones: ZoneOption[];
 }
 
 export interface CurrencyOption {

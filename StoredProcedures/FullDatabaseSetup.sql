@@ -210,12 +210,24 @@ CREATE TABLE Tracket_Master_Event (
     IsCancelled BIT NOT NULL DEFAULT 0,
     CancelReason NVARCHAR(MAX) NULL,
     RejectionReason NVARCHAR(MAX) NULL,
-    OrganizerId BIGINT NULL,
+    UserId BIGINT NULL FOREIGN KEY REFERENCES Tracket_Master_User(UserId),
+    EventRId NVARCHAR(100) NULL,
+    ShortDescription NVARCHAR(500) NULL,
+    Slug NVARCHAR(300) NULL,
+    SeoTitle NVARCHAR(300) NULL,
+    SeoDescription NVARCHAR(MAX) NULL,
+    SeoKeywords NVARCHAR(1000) NULL,
+    Tags NVARCHAR(1000) NULL,
+    StartDate DATETIME NULL,
+    EndDate DATETIME NULL,
+    IsFree BIT NULL,
+    IsPublic BIT NULL,
+    MetaJson NVARCHAR(MAX) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0,
-    CreatedBy BIGINT NULL,
+    CreatedBy NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedFrom NVARCHAR(100) NULL,
-    UpdatedBy BIGINT NULL,
+    UpdatedBy NVARCHAR(200) NULL,
     UpdatedDate DATETIME NULL,
     UpdatedFrom NVARCHAR(100) NULL
 );
@@ -241,11 +253,14 @@ CREATE TABLE Tracket_Master_Event_Location (
     GroundName NVARCHAR(200) NULL,
     ParkingAvailable BIT NOT NULL DEFAULT 0,
     ParkingDetails NVARCHAR(MAX) NULL,
+    CountryId NVARCHAR(200) NULL,
+    StateId NVARCHAR(200) NULL,
+    CityId NVARCHAR(200) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0,
-    CreatedBy BIGINT NULL,
+    CreatedBy NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedFrom NVARCHAR(100) NULL,
-    UpdatedBy BIGINT NULL,
+    UpdatedBy NVARCHAR(200) NULL,
     UpdatedDate DATETIME NULL,
     UpdatedFrom NVARCHAR(100) NULL
 );
@@ -265,10 +280,10 @@ CREATE TABLE Tracket_Master_Event_Slot (
     ReservedSeats INT NOT NULL DEFAULT 0,
     IsBookingOpen BIT NOT NULL DEFAULT 1,
     IsDeleted BIT NOT NULL DEFAULT 0,
-    CreatedBy BIGINT NULL,
+    CreatedBy NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedFrom NVARCHAR(100) NULL,
-    UpdatedBy BIGINT NULL,
+    UpdatedBy NVARCHAR(200) NULL,
     UpdatedDate DATETIME NULL,
     UpdatedFrom NVARCHAR(100) NULL
 );
@@ -285,10 +300,10 @@ CREATE TABLE Tracket_Master_Event_Document (
     FileSize BIGINT NULL,
     Remarks NVARCHAR(MAX) NULL,
     IsDeleted BIT NOT NULL DEFAULT 0,
-    CreatedBy BIGINT NULL,
+    CreatedBy NVARCHAR(200) NULL,
     CreatedDate DATETIME NOT NULL DEFAULT GETDATE(),
     CreatedFrom NVARCHAR(100) NULL,
-    UpdatedBy BIGINT NULL,
+    UpdatedBy NVARCHAR(200) NULL,
     UpdatedDate DATETIME NULL,
     UpdatedFrom NVARCHAR(100) NULL
 );
@@ -993,17 +1008,46 @@ BEGIN
             @IsCancelled BIT,
             @CancelReason NVARCHAR(MAX),
             @RejectionReason NVARCHAR(MAX),
-            @OrganizerId BIGINT,
-            @CreatedBy BIGINT,
+            @CreatedBy NVARCHAR(200),
             @CreatedFrom NVARCHAR(100),
-            @UpdatedBy BIGINT,
+            @UpdatedBy NVARCHAR(200),
             @UpdatedFrom NVARCHAR(100),
+            @EventRId NVARCHAR(100),
             
+            -- New Event Fields
+            @ShortDescription NVARCHAR(500),
+            @UserId BIGINT,
+            @Slug NVARCHAR(300),
+            @SeoTitle NVARCHAR(300),
+            @SeoDescription NVARCHAR(MAX),
+            @SeoKeywords NVARCHAR(1000),
+            @Tags NVARCHAR(1000),
+            @StartDate DATETIME,
+            @EndDate DATETIME,
+            @IsFree BIT,
+            @IsPublic BIT,
+            @MetaJson NVARCHAR(MAX),
+
             -- Location Info
+            @LocationId BIGINT,
             @LocationName NVARCHAR(300),
             @Address NVARCHAR(MAX),
+            @VenueName NVARCHAR(300),
+            @AddressLine1 NVARCHAR(500),
+            @AddressLine2 NVARCHAR(500),
+            @AreaName NVARCHAR(300),
+            @Landmark NVARCHAR(300),
+            @Pincode NVARCHAR(20),
             @Latitude DECIMAL(18,10),
-            @Longitude DECIMAL(18,10);
+            @Longitude DECIMAL(18,10),
+            @GoogleMapLink NVARCHAR(MAX),
+            @HallName NVARCHAR(200),
+            @GroundName NVARCHAR(200),
+            @ParkingAvailable BIT,
+            @ParkingDetails NVARCHAR(MAX),
+            @CountryId NVARCHAR(100),
+            @StateId NVARCHAR(100),
+            @CityId NVARCHAR(100);
 
         SELECT 
             @EventId = EventId,
@@ -1036,15 +1080,46 @@ BEGIN
             @IsCancelled = IsCancelled,
             @CancelReason = CancelReason,
             @RejectionReason = RejectionReason,
-            @OrganizerId = OrganizerId,
             @CreatedBy = CreatedBy,
             @CreatedFrom = CreatedFrom,
             @UpdatedBy = UpdatedBy,
             @UpdatedFrom = UpdatedFrom,
+            @EventRId = EventRId,
+            
+            -- New Event fields
+            @ShortDescription = ShortDescription,
+            @UserId = UserId,
+            @Slug = Slug,
+            @SeoTitle = SeoTitle,
+            @SeoDescription = SeoDescription,
+            @SeoKeywords = SeoKeywords,
+            @Tags = Tags,
+            @StartDate = StartDate,
+            @EndDate = EndDate,
+            @IsFree = IsFree,
+            @IsPublic = IsPublic,
+            @MetaJson = MetaJson,
+
+            -- Location
+            @LocationId = LocationId,
             @LocationName = LocationName,
             @Address = Address,
+            @VenueName = VenueName,
+            @AddressLine1 = AddressLine1,
+            @AddressLine2 = AddressLine2,
+            @AreaName = AreaName,
+            @Landmark = Landmark,
+            @Pincode = Pincode,
             @Latitude = Latitude,
-            @Longitude = Longitude
+            @Longitude = Longitude,
+            @GoogleMapLink = GoogleMapLink,
+            @HallName = HallName,
+            @GroundName = GroundName,
+            @ParkingAvailable = ParkingAvailable,
+            @ParkingDetails = ParkingDetails,
+            @CountryId = CountryId,
+            @StateId = StateId,
+            @CityId = CityId
         FROM OPENJSON(@JsonData)
         WITH (
             EventId BIGINT '$.EventId',
@@ -1077,66 +1152,142 @@ BEGIN
             IsCancelled BIT '$.IsCancelled',
             CancelReason NVARCHAR(MAX) '$.CancelReason',
             RejectionReason NVARCHAR(MAX) '$.RejectionReason',
-            OrganizerId BIGINT '$.OrganizerId',
-            CreatedBy BIGINT '$.CreatedBy',
+            CreatedBy NVARCHAR(200) '$.CreatedBy',
             CreatedFrom NVARCHAR(100) '$.CreatedFrom',
-            UpdatedBy BIGINT '$.UpdatedBy',
+            UpdatedBy NVARCHAR(200) '$.UpdatedBy',
             UpdatedFrom NVARCHAR(100) '$.UpdatedFrom',
+            EventRId NVARCHAR(100) '$.EventRId',
+            
+            -- New Event DTO mappings
+            ShortDescription NVARCHAR(500) '$.ShortDescription',
+            UserId BIGINT '$.UserId',
+            Slug NVARCHAR(300) '$.Slug',
+            SeoTitle NVARCHAR(300) '$.SeoTitle',
+            SeoDescription NVARCHAR(MAX) '$.SeoDescription',
+            SeoKeywords NVARCHAR(1000) '$.SeoKeywords',
+            Tags NVARCHAR(1000) '$.Tags',
+            StartDate DATETIME '$.StartDate',
+            EndDate DATETIME '$.EndDate',
+            IsFree BIT '$.IsFree',
+            IsPublic BIT '$.IsPublic',
+            MetaJson NVARCHAR(MAX) '$.MetaJson',
+
+            -- Location
+            LocationId BIGINT '$.LocationId',
             LocationName NVARCHAR(300) '$.LocationName',
             Address NVARCHAR(MAX) '$.Address',
+            VenueName NVARCHAR(300) '$.VenueName',
+            AddressLine1 NVARCHAR(500) '$.AddressLine1',
+            AddressLine2 NVARCHAR(500) '$.AddressLine2',
+            AreaName NVARCHAR(300) '$.AreaName',
+            Landmark NVARCHAR(300) '$.Landmark',
+            Pincode NVARCHAR(20) '$.Pincode',
             Latitude DECIMAL(18,10) '$.Latitude',
-            Longitude DECIMAL(18,10) '$.Longitude'
+            Longitude DECIMAL(18,10) '$.Longitude',
+            GoogleMapLink NVARCHAR(MAX) '$.GoogleMapLink',
+            HallName NVARCHAR(200) '$.HallName',
+            GroundName NVARCHAR(200) '$.GroundName',
+            ParkingAvailable BIT '$.ParkingAvailable',
+            ParkingDetails NVARCHAR(MAX) '$.ParkingDetails',
+            CountryId NVARCHAR(100) '$.CountryId',
+            StateId NVARCHAR(100) '$.StateId',
+            CityId NVARCHAR(100) '$.CityId'
         );
 
-        -- If About is not passed but Description is, fallback to Description
+        -- Fallback
         IF @About IS NULL OR @About = ''
         BEGIN
             SELECT @About = Description FROM OPENJSON(@JsonData) WITH (Description NVARCHAR(MAX) '$.Description');
         END
 
+        -- Location Compatibility Fallback
+        IF @VenueName IS NULL OR @VenueName = ''
+            SET @VenueName = @LocationName;
+        IF @AddressLine1 IS NULL OR @AddressLine1 = ''
+            SET @AddressLine1 = @Address;
+
+        -- Look up @UserId by email if it is null/zero since @CreatedBy is now the user's email
+        IF @UserId IS NULL OR @UserId = 0
+        BEGIN
+            SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE EmailId = @CreatedBy AND IsDeleted = 0;
+            IF @UserId IS NULL OR @UserId = 0
+                SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE Name = @CreatedBy AND IsDeleted = 0;
+        END
+
+        IF @EventRId IS NULL OR @EventRId = ''
+        BEGIN
+            SET @EventRId = 'EVT-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12));
+        END
+
         IF @EventId = 0
         BEGIN
             INSERT INTO Tracket_Master_Event (
-                EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
+                EventRId, EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
                 About, TermsAndConditions, FacebookLink, WebsiteLink, YoutubeLink, InstagramLink, 
                 TwitterLink, LinkedInLink, PintrestLink, ListingType, IsBookingAccept, BookingType, 
                 Currency, EventType, IsPublishActive, IsPassBookingActive, Status, ApprovalStatus, 
-                Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, OrganizerId, 
-                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+                Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, UserId,
+                ShortDescription, Slug, SeoTitle, SeoDescription, SeoKeywords, Tags, StartDate, EndDate,
+                IsFree, IsPublic, MetaJson, IsDeleted, CreatedBy, CreatedDate, CreatedFrom
             )
             VALUES (
-                @EventName, @EventCode, @EventCategoryId, @EventSubCategoryId, @ThumbnailImage, @BannerImage, 
+                @EventRId, @EventName, @EventCode, @EventCategoryId, @EventSubCategoryId, @ThumbnailImage, @BannerImage, 
                 @About, @TermsAndConditions, @FacebookLink, @WebsiteLink, @YoutubeLink, @InstagramLink, 
                 @TwitterLink, @LinkedInLink, @PintrestLink, @ListingType, ISNULL(@IsBookingAccept, 1), @BookingType, 
                 ISNULL(@Currency, 'INR'), @EventType, ISNULL(@IsPublishActive, 0), ISNULL(@IsPassBookingActive, 1), 
                 ISNULL(@Status, 0), ISNULL(@ApprovalStatus, 0), @Capacity, @TicketPrice, ISNULL(@IsCancelled, 0), 
-                @CancelReason, @RejectionReason, @OrganizerId, 
+                @CancelReason, @RejectionReason, @UserId,
+                @ShortDescription, @Slug, @SeoTitle, @SeoDescription, @SeoKeywords, @Tags, @StartDate, @EndDate,
+                ISNULL(@IsFree, 0), ISNULL(@IsPublic, 1), @MetaJson,
                 0, @CreatedBy, GETDATE(), @CreatedFrom
             );
 
             SET @EventId = SCOPE_IDENTITY();
 
-            INSERT INTO Tracket_Master_Event_Location (EventId, VenueName, AddressLine1, Latitude, Longitude, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
-            VALUES (@EventId, @LocationName, @Address, @Latitude, @Longitude, 0, @CreatedBy, GETDATE(), @CreatedFrom);
+            INSERT INTO Tracket_Master_Event_Location (
+                EventId, VenueName, AddressLine1, AddressLine2, AreaName, Landmark, Pincode, Latitude, Longitude, GoogleMapLink, HallName, GroundName, ParkingAvailable, ParkingDetails, CountryId, StateId, CityId,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            VALUES (
+                @EventId, @VenueName, @AddressLine1, @AddressLine2, @AreaName, @Landmark, @Pincode, @Latitude, @Longitude, @GoogleMapLink, @HallName, @GroundName, ISNULL(@ParkingAvailable, 0), @ParkingDetails, @CountryId, @StateId, @CityId,
+                0, @CreatedBy, GETDATE(), @CreatedFrom
+            );
 
             -- Process Slots
-            INSERT INTO Tracket_Master_Event_Slot (EventId, EventDate, StartTime, EndTime, Capacity, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
-            SELECT @EventId, SlotDate, CAST(StartTime AS TIME), CAST(EndTime AS TIME), Capacity, 0, @CreatedBy, GETDATE(), @CreatedFrom
+            INSERT INTO Tracket_Master_Event_Slot (
+                EventId, EventDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT 
+                @EventId, SlotDate, CAST(StartTime AS TIME), CAST(EndTime AS TIME), Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+                0, @CreatedBy, GETDATE(), @CreatedFrom
             FROM OPENJSON(@JsonData, '$.Slots')
             WITH (
                 SlotDate DATE '$.SlotDate',
                 StartTime NVARCHAR(50) '$.StartTime',
                 EndTime NVARCHAR(50) '$.EndTime',
-                Capacity INT '$.Capacity'
+                Capacity INT '$.Capacity',
+                SlotName NVARCHAR(100) '$.SlotName',
+                TicketPrice DECIMAL(18,2) '$.TicketPrice',
+                GenderRestriction NVARCHAR(20) '$.GenderRestriction',
+                AgeRestriction INT '$.AgeRestriction'
             );
 
             -- Process Documents
-            INSERT INTO Tracket_Master_Event_Document (EventId, FileName, FilePath, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
-            SELECT @EventId, DocumentName, RelativePath, 0, @CreatedBy, GETDATE(), @CreatedFrom
+            INSERT INTO Tracket_Master_Event_Document (
+                EventId, FileName, FilePath, IsPrimary, DisplayOrder, ThumbnailPath,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT 
+                @EventId, DocumentName, RelativePath, ISNULL(IsPrimary, 0), ISNULL(DisplayOrder, 0), ThumbnailPath,
+                0, @CreatedBy, GETDATE(), @CreatedFrom
             FROM OPENJSON(@JsonData, '$.Documents')
             WITH (
                 DocumentName NVARCHAR(500) '$.DocumentName',
-                RelativePath NVARCHAR(MAX) '$.RelativePath'
+                RelativePath NVARCHAR(MAX) '$.RelativePath',
+                IsPrimary BIT '$.IsPrimary',
+                DisplayOrder INT '$.DisplayOrder',
+                ThumbnailPath NVARCHAR(500) '$.ThumbnailPath'
             );
 
             COMMIT TRANSACTION;
@@ -1174,8 +1325,18 @@ BEGIN
                 TicketPrice = @TicketPrice,
                 IsCancelled = ISNULL(@IsCancelled, IsCancelled),
                 CancelReason = @CancelReason,
-                RejectionReason = @RejectionReason,
-                OrganizerId = @OrganizerId,
+                UserId = @UserId,
+                ShortDescription = @ShortDescription,
+                Slug = @Slug,
+                SeoTitle = @SeoTitle,
+                SeoDescription = @SeoDescription,
+                SeoKeywords = @SeoKeywords,
+                Tags = @Tags,
+                StartDate = @StartDate,
+                EndDate = @EndDate,
+                IsFree = ISNULL(@IsFree, IsFree),
+                IsPublic = ISNULL(@IsPublic, IsPublic),
+                MetaJson = @MetaJson,
                 UpdatedBy = @UpdatedBy,
                 UpdatedDate = GETDATE(),
                 UpdatedFrom = @UpdatedFrom
@@ -1183,10 +1344,22 @@ BEGIN
 
             UPDATE Tracket_Master_Event_Location
             SET 
-                VenueName = @LocationName, 
-                AddressLine1 = @Address, 
+                VenueName = @VenueName, 
+                AddressLine1 = @AddressLine1, 
+                AddressLine2 = @AddressLine2,
+                AreaName = @AreaName,
+                Landmark = @Landmark,
+                Pincode = @Pincode,
                 Latitude = @Latitude, 
                 Longitude = @Longitude,
+                GoogleMapLink = @GoogleMapLink,
+                HallName = @HallName,
+                GroundName = @GroundName,
+                ParkingAvailable = ISNULL(@ParkingAvailable, ParkingAvailable),
+                ParkingDetails = @ParkingDetails,
+                CountryId = @CountryId,
+                StateId = @StateId,
+                CityId = @CityId,
                 UpdatedBy = @UpdatedBy,
                 UpdatedDate = GETDATE(),
                 UpdatedFrom = @UpdatedFrom
@@ -1195,23 +1368,42 @@ BEGIN
             -- Merging slots: soft delete old slots and insert/update new ones
             UPDATE Tracket_Master_Event_Slot SET IsDeleted = 1 WHERE EventId = @EventId;
 
-            INSERT INTO Tracket_Master_Event_Slot (EventId, EventDate, StartTime, EndTime, Capacity, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
-            SELECT @EventId, SlotDate, CAST(StartTime AS TIME), CAST(EndTime AS TIME), Capacity, 0, @UpdatedBy, GETDATE(), @UpdatedFrom
+            INSERT INTO Tracket_Master_Event_Slot (
+                EventId, EventDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT 
+                @EventId, SlotDate, CAST(StartTime AS TIME), CAST(EndTime AS TIME), Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+                0, @UpdatedBy, GETDATE(), @UpdatedFrom
             FROM OPENJSON(@JsonData, '$.Slots')
             WITH (
                 SlotDate DATE '$.SlotDate',
                 StartTime NVARCHAR(50) '$.StartTime',
                 EndTime NVARCHAR(50) '$.EndTime',
-                Capacity INT '$.Capacity'
+                Capacity INT '$.Capacity',
+                SlotName NVARCHAR(100) '$.SlotName',
+                TicketPrice DECIMAL(18,2) '$.TicketPrice',
+                GenderRestriction NVARCHAR(20) '$.GenderRestriction',
+                AgeRestriction INT '$.AgeRestriction'
             );
 
-            -- Add new documents
-            INSERT INTO Tracket_Master_Event_Document (EventId, FileName, FilePath, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
-            SELECT @EventId, DocumentName, RelativePath, 0, @UpdatedBy, GETDATE(), @UpdatedFrom
+            -- Mark old documents as deleted
+            UPDATE Tracket_Master_Event_Document SET IsDeleted = 1 WHERE EventId = @EventId;
+
+            INSERT INTO Tracket_Master_Event_Document (
+                EventId, FileName, FilePath, IsPrimary, DisplayOrder, ThumbnailPath,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT 
+                @EventId, DocumentName, RelativePath, ISNULL(IsPrimary, 0), ISNULL(DisplayOrder, 0), ThumbnailPath,
+                0, @UpdatedBy, GETDATE(), @UpdatedFrom
             FROM OPENJSON(@JsonData, '$.Documents')
             WITH (
                 DocumentName NVARCHAR(500) '$.DocumentName',
-                RelativePath NVARCHAR(MAX) '$.RelativePath'
+                RelativePath NVARCHAR(MAX) '$.RelativePath',
+                IsPrimary BIT '$.IsPrimary',
+                DisplayOrder INT '$.DisplayOrder',
+                ThumbnailPath NVARCHAR(500) '$.ThumbnailPath'
             );
 
             COMMIT TRANSACTION;
@@ -1220,26 +1412,30 @@ BEGIN
 
         -- Return Event Info with all columns
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, L.VenueName AS LocationName, L.AddressLine1 AS Address, 
-            L.Latitude, L.Longitude, E.IsPublishActive AS IsActive
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.EventId = @EventId;
 
         -- Return Slots
-        SELECT SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity 
+        SELECT SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE EventId = @EventId AND IsDeleted = 0;
 
         -- Return Documents
-        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath 
+        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath, IsPrimary, DisplayOrder, ThumbnailPath
         FROM Tracket_Master_Event_Document 
         WHERE EventId = @EventId AND IsDeleted = 0;
 
@@ -1261,48 +1457,56 @@ BEGIN
     IF @EventId IS NOT NULL
     BEGIN
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, L.VenueName AS LocationName, L.AddressLine1 AS Address, 
-            L.Latitude, L.Longitude, E.IsPublishActive AS IsActive
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.EventId = @EventId AND E.IsDeleted = 0;
 
-        SELECT SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity 
+        SELECT SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE EventId = @EventId AND IsDeleted = 0;
 
-        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath 
+        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath, IsPrimary, DisplayOrder, ThumbnailPath
         FROM Tracket_Master_Event_Document 
         WHERE EventId = @EventId AND IsDeleted = 0;
     END
     ELSE
     BEGIN
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, L.VenueName AS LocationName, L.AddressLine1 AS Address, 
-            L.Latitude, L.Longitude, E.IsPublishActive AS IsActive
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.IsDeleted = 0;
 
-        SELECT EventId, SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity 
+        SELECT EventId, SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE IsDeleted = 0;
 
-        SELECT EventId, DocumentId, FileName AS DocumentName, FilePath AS RelativePath 
+        SELECT EventId, DocumentId, FileName AS DocumentName, FilePath AS RelativePath, IsPrimary, DisplayOrder, ThumbnailPath
         FROM Tracket_Master_Event_Document 
         WHERE IsDeleted = 0;
     END
@@ -1372,16 +1576,35 @@ BEGIN
     SET NOCOUNT ON;
     BEGIN TRANSACTION;
     BEGIN TRY
-        DECLARE @EventId INT, @NewEventName NVARCHAR(150), @NewEventId INT;
+        DECLARE 
+            @EventId INT, 
+            @EventRId NVARCHAR(100),
+            @NewEventName NVARCHAR(150), 
+            @NewEventId INT,
+            @NewEventRId NVARCHAR(100),
+            @CreatedBy NVARCHAR(200),
+            @CreatedFrom NVARCHAR(100);
 
         SELECT 
             @EventId = EventId,
-            @NewEventName = NewEventName
+            @EventRId = EventRId,
+            @NewEventName = NewEventName,
+            @CreatedBy = CreatedBy,
+            @CreatedFrom = CreatedFrom
         FROM OPENJSON(@JsonData)
         WITH (
             EventId INT '$.EventId',
-            NewEventName NVARCHAR(150) '$.NewEventName'
+            EventRId NVARCHAR(100) '$.EventRId',
+            NewEventName NVARCHAR(150) '$.NewEventName',
+            CreatedBy NVARCHAR(200) '$.CreatedBy',
+            CreatedFrom NVARCHAR(100) '$.CreatedFrom'
         );
+
+        -- Fallback if EventId is 0 or NULL
+        IF (@EventId IS NULL OR @EventId = 0) AND (@EventRId IS NOT NULL AND @EventRId <> '')
+        BEGIN
+            SELECT @EventId = EventId FROM Tracket_Master_Event WHERE EventRId = @EventRId AND IsDeleted = 0;
+        END
 
         IF NOT EXISTS(SELECT 1 FROM Tracket_Master_Event WHERE EventId = @EventId AND IsDeleted = 0)
         BEGIN
@@ -1390,42 +1613,62 @@ BEGIN
             RETURN;
         END
 
+        -- Generate new EventRId
+        SET @NewEventRId = 'EVT-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12));
+
         -- Duplicate Base Event
         INSERT INTO Tracket_Master_Event (
-            EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
+            EventRId, EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
             About, TermsAndConditions, FacebookLink, WebsiteLink, YoutubeLink, InstagramLink, 
             TwitterLink, LinkedInLink, PintrestLink, ListingType, IsBookingAccept, BookingType, 
             Currency, EventType, IsPublishActive, IsPassBookingActive, Status, ApprovalStatus, 
-            Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, OrganizerId, 
-            IsDeleted, CreatedBy, CreatedDate
+            Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, UserId, 
+            ShortDescription, Slug, SeoTitle, SeoDescription, SeoKeywords, Tags, StartDate, EndDate,
+            IsFree, IsPublic, MetaJson, IsDeleted, CreatedBy, CreatedDate, CreatedFrom
         )
         SELECT 
-            @NewEventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
+            @NewEventRId, @NewEventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
             About, TermsAndConditions, FacebookLink, WebsiteLink, YoutubeLink, InstagramLink, 
             TwitterLink, LinkedInLink, PintrestLink, ListingType, IsBookingAccept, BookingType, 
             Currency, EventType, IsPublishActive, IsPassBookingActive, Status, ApprovalStatus, 
-            Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, OrganizerId, 
-            0, CreatedBy, GETDATE()
+            Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, UserId, 
+            ShortDescription, Slug, SeoTitle, SeoDescription, SeoKeywords, Tags, StartDate, EndDate,
+            IsFree, IsPublic, MetaJson, 0, ISNULL(@CreatedBy, CreatedBy), GETDATE(), ISNULL(@CreatedFrom, 'WebUI')
         FROM Tracket_Master_Event 
         WHERE EventId = @EventId;
 
         SET @NewEventId = SCOPE_IDENTITY();
 
         -- Duplicate Location
-        INSERT INTO Tracket_Master_Event_Location (EventId, VenueName, AddressLine1, Latitude, Longitude, IsDeleted)
-        SELECT @NewEventId, VenueName, AddressLine1, Latitude, Longitude, 0
+        INSERT INTO Tracket_Master_Event_Location (
+            EventId, VenueName, AddressLine1, AddressLine2, AreaName, Landmark, Pincode, Latitude, Longitude, GoogleMapLink, HallName, GroundName, ParkingAvailable, ParkingDetails, CountryId, StateId, CityId,
+            IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+        )
+        SELECT 
+            @NewEventId, VenueName, AddressLine1, AddressLine2, AreaName, Landmark, Pincode, Latitude, Longitude, GoogleMapLink, HallName, GroundName, ParkingAvailable, ParkingDetails, CountryId, StateId, CityId,
+            0, ISNULL(@CreatedBy, CreatedBy), GETDATE(), ISNULL(@CreatedFrom, 'WebUI')
         FROM Tracket_Master_Event_Location
         WHERE EventId = @EventId AND IsDeleted = 0;
 
         -- Duplicate Slots
-        INSERT INTO Tracket_Master_Event_Slot (EventId, EventDate, StartTime, EndTime, Capacity, IsDeleted)
-        SELECT @NewEventId, EventDate, StartTime, EndTime, Capacity, 0
+        INSERT INTO Tracket_Master_Event_Slot (
+            EventId, EventDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+            IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+        )
+        SELECT 
+            @NewEventId, EventDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction,
+            0, ISNULL(@CreatedBy, CreatedBy), GETDATE(), ISNULL(@CreatedFrom, 'WebUI')
         FROM Tracket_Master_Event_Slot
         WHERE EventId = @EventId AND IsDeleted = 0;
 
         -- Duplicate Documents
-        INSERT INTO Tracket_Master_Event_Document (EventId, FileName, FilePath, IsDeleted)
-        SELECT @NewEventId, FileName, FilePath, 0
+        INSERT INTO Tracket_Master_Event_Document (
+            EventId, DocumentType, FileName, FilePath, FileExtension, FileSize, Remarks, IsPrimary, DisplayOrder, ThumbnailPath,
+            IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+        )
+        SELECT 
+            @NewEventId, DocumentType, FileName, FilePath, FileExtension, FileSize, Remarks, IsPrimary, DisplayOrder, ThumbnailPath,
+            0, ISNULL(@CreatedBy, CreatedBy), GETDATE(), ISNULL(@CreatedFrom, 'WebUI')
         FROM Tracket_Master_Event_Document
         WHERE EventId = @EventId AND IsDeleted = 0;
 
@@ -1433,14 +1676,18 @@ BEGIN
         SELECT 201 AS ResultStatus, 'Event duplicated successfully.' AS ResultMessage;
 
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, L.VenueName AS LocationName, L.AddressLine1 AS Address, 
-            L.Latitude, L.Longitude, E.IsPublishActive AS IsActive
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
@@ -1993,7 +2240,19 @@ BEGIN
     END
 
     SELECT 
-        I.InvoiceId, I.InvoiceCode AS InvoiceNumber, I.BookingId, B.BookingNo AS BookingReference, I.SubTotal AS BaseAmount, I.TaxAmount, I.GrandTotal AS TotalAmount, CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, I.InvoiceDate AS CreatedDate
+        I.InvoiceId, 
+        I.InvoiceCode AS InvoiceNumber, 
+        I.BookingId, 
+        B.BookingNo AS BookingReference, 
+        B.BookingNo AS BookingNo, 
+        B.BookingNo AS BookingNumber, 
+        I.SubTotal AS BaseAmount, 
+        I.SubTotal AS SubTotal, 
+        I.TaxAmount, 
+        I.GrandTotal AS TotalAmount, 
+        CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, 
+        I.InvoiceDate AS CreatedDate,
+        I.InvoiceDate AS InvoiceDate
     FROM Tracket_Master_Invoice I
     INNER JOIN Tracket_Master_Booking B ON I.BookingId = B.BookingId
     WHERE I.InvoiceId = @InvoiceId;
@@ -2002,15 +2261,89 @@ GO
 
 -- 32. USP_GetInvoices
 CREATE OR ALTER PROCEDURE USP_GetInvoices
+    @UserId INT = NULL,
+    @UserRole INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT 
-        I.InvoiceId, I.InvoiceCode AS InvoiceNumber, I.BookingId, B.BookingNo AS BookingReference, I.SubTotal AS BaseAmount, I.TaxAmount, I.GrandTotal AS TotalAmount, CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, I.InvoiceDate AS CreatedDate
-    FROM Tracket_Master_Invoice I
-    INNER JOIN Tracket_Master_Booking B ON I.BookingId = B.BookingId
-    WHERE I.IsDeleted = 0;
+    IF @UserRole = 1
+    BEGIN
+        -- SuperAdmin: get all invoices
+        SELECT 
+            I.InvoiceId, 
+            I.InvoiceCode AS InvoiceNumber, 
+            I.BookingId, 
+            B.BookingNo AS BookingReference, 
+            B.BookingNo AS BookingNo, 
+            B.BookingNo AS BookingNumber, 
+            I.SubTotal AS BaseAmount, 
+            I.SubTotal AS SubTotal, 
+            I.TaxAmount, 
+            I.GrandTotal AS TotalAmount, 
+            CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, 
+            I.InvoiceDate AS CreatedDate,
+            I.InvoiceDate AS InvoiceDate,
+            E.EventName,
+            U.Name AS CustomerName
+        FROM Tracket_Master_Invoice I WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON I.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_User U WITH (NOLOCK) ON B.UserId = U.UserId
+        WHERE I.IsDeleted = 0;
+    END
+    ELSE IF @UserRole = 2
+    BEGIN
+        -- Organizer: get invoices of their own events
+        SELECT 
+            I.InvoiceId, 
+            I.InvoiceCode AS InvoiceNumber, 
+            I.BookingId, 
+            B.BookingNo AS BookingReference, 
+            B.BookingNo AS BookingNo, 
+            B.BookingNo AS BookingNumber, 
+            I.SubTotal AS BaseAmount, 
+            I.SubTotal AS SubTotal, 
+            I.TaxAmount, 
+            I.GrandTotal AS TotalAmount, 
+            CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, 
+            I.InvoiceDate AS CreatedDate,
+            I.InvoiceDate AS InvoiceDate,
+            E.EventName,
+            U.Name AS CustomerName
+        FROM Tracket_Master_Invoice I WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON I.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_User U WITH (NOLOCK) ON B.UserId = U.UserId
+        WHERE I.IsDeleted = 0
+          AND E.UserId = @UserId;
+    END
+    ELSE
+    BEGIN
+        -- Standard/Visitor or fallback: get invoices for bookings they made
+        SELECT 
+            I.InvoiceId, 
+            I.InvoiceCode AS InvoiceNumber, 
+            I.BookingId, 
+            B.BookingNo AS BookingReference, 
+            B.BookingNo AS BookingNo, 
+            B.BookingNo AS BookingNumber, 
+            I.SubTotal AS BaseAmount, 
+            I.SubTotal AS SubTotal, 
+            I.TaxAmount, 
+            I.GrandTotal AS TotalAmount, 
+            CAST(I.InvoiceStatus AS VARCHAR(10)) AS Status, 
+            I.InvoiceDate AS CreatedDate,
+            I.InvoiceDate AS InvoiceDate,
+            E.EventName,
+            U.Name AS CustomerName
+        FROM Tracket_Master_Invoice I WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON I.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_User U WITH (NOLOCK) ON B.UserId = U.UserId
+        WHERE I.IsDeleted = 0
+          AND (@UserId IS NULL OR B.UserId = @UserId);
+    END
 END;
 GO
 
@@ -2116,7 +2449,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @BookingId INT, @PassType NVARCHAR(50), @PassCode NVARCHAR(100), @PassId INT;
+    DECLARE @BookingId INT, @PassType NVARCHAR(50), @PassNo NVARCHAR(100), @PassId INT;
 
     SELECT 
         @BookingId = BookingId,
@@ -2127,9 +2460,6 @@ BEGIN
         PassType NVARCHAR(50) '$.PassType'
     );
 
-    DECLARE @AttendeeId BIGINT;
-    SELECT TOP 1 @AttendeeId = AttendeeId FROM Tracket_Master_Booking_Attendee WHERE BookingId = @BookingId AND IsDeleted = 0;
-
     IF EXISTS (SELECT 1 FROM Tracket_Master_Pass WHERE BookingId = @BookingId AND IsDeleted = 0)
     BEGIN
         SELECT @PassId = PassId FROM Tracket_Master_Pass WHERE BookingId = @BookingId AND IsDeleted = 0;
@@ -2137,39 +2467,190 @@ BEGIN
     END
     ELSE
     BEGIN
-        SET @PassCode = 'PASS-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12));
+        -- Generate passes for the booking attendees
+        INSERT INTO Tracket_Master_Pass (BookingId, AttendeeId, PassNo, QRCode, SeatNo, PassStatus, IsUsed, IsDeleted, CreatedDate, CreatedBy)
+        SELECT 
+            @BookingId,
+            A.AttendeeId,
+            'PASS-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12)),
+            'QR-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 8)),
+            A.SeatNo,
+            1, -- Active
+            0, -- Not used
+            0,
+            GETDATE(),
+            'System'
+        FROM Tracket_Master_Booking_Attendee A
+        WHERE A.BookingId = @BookingId 
+          AND A.IsDeleted = 0
+          AND NOT EXISTS (
+              SELECT 1 FROM Tracket_Master_Pass P WHERE P.AttendeeId = A.AttendeeId AND P.IsDeleted = 0
+          );
 
-        INSERT INTO Tracket_Master_Pass (BookingId, AttendeeId, PassNo, QRCode, Barcode, PassStatus, IsUsed, ExpiryDate, IsDeleted)
-        VALUES (@BookingId, ISNULL(@AttendeeId, 1), @PassCode, @PassCode, @PassCode, 1, 0, DATEADD(DAY, 30, GETDATE()), 0);
-
-        SET @PassId = SCOPE_IDENTITY();
+        SELECT @PassId = SCOPE_IDENTITY();
         SELECT 201 AS ResultStatus, 'Pass generated successfully.' AS ResultMessage;
     END
 
     SELECT 
-        P.PassId, P.PassNo AS PassCode, P.BookingId, E.EventName, A.FullName AS AttendeeName, CAST(P.PassStatus AS VARCHAR(10)) AS PassType, CAST(P.IsUsed AS VARCHAR(10)) AS Status, P.CreatedDate AS GeneratedDate
+        P.PassId,
+        P.PassNo AS PassCode,
+        P.BookingId,
+        E.EventName,
+        S.EventDate AS SlotDate,
+        S.StartTime,
+        S.EndTime,
+        S.SlotName,
+        P.SeatNo,
+        A.FullName AS AttendeeName,
+        A.FullName AS HolderName,
+        A.Email AS HolderEmail,
+        'TICKET' AS PassType, 
+        CASE WHEN P.PassStatus = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END AS Status,
+        P.CreatedDate AS GeneratedDate,
+        CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+        L.VenueName,
+        L.AddressLine1,
+        L.AddressLine2,
+        L.CityId AS City,
+        L.StateId AS State,
+        L.CountryId AS Country,
+        L.GoogleMapLink
     FROM Tracket_Master_Pass P
     INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
     INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
+    INNER JOIN Tracket_Master_Event_Slot S ON B.SlotId = S.SlotId
     INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
-    WHERE P.PassId = @PassId;
+    LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+    WHERE P.BookingId = @BookingId;
 END;
 GO
 
 -- 36. USP_GetPassDetails
 CREATE OR ALTER PROCEDURE USP_GetPassDetails
-    @PassId INT
+    @PassId INT,
+    @UserId INT = NULL,
+    @UserRole INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    SELECT 
-        P.PassId, P.PassNo AS PassCode, P.BookingId, E.EventName, A.FullName AS AttendeeName, CAST(P.PassStatus AS VARCHAR(10)) AS PassType, CAST(P.IsUsed AS VARCHAR(10)) AS Status, P.CreatedDate AS GeneratedDate
-    FROM Tracket_Master_Pass P
-    INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
-    INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
-    INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
-    WHERE P.PassId = @PassId AND P.IsDeleted = 0;
+    IF @UserRole = 1
+    BEGIN
+        -- SuperAdmin: get details for any pass
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS AttendeeName,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            'TICKET' AS PassType, 
+            CASE WHEN P.PassStatus = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END AS Status,
+            P.CreatedDate AS GeneratedDate,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P
+        INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        WHERE P.PassId = @PassId AND P.IsDeleted = 0;
+    END
+    ELSE IF @UserRole = 2
+    BEGIN
+        -- Organizer: get details if the pass event belongs to this organizer
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS AttendeeName,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            'TICKET' AS PassType, 
+            CASE WHEN P.PassStatus = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END AS Status,
+            P.CreatedDate AS GeneratedDate,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P
+        INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        WHERE P.PassId = @PassId AND E.UserId = @UserId AND P.IsDeleted = 0;
+    END
+    ELSE
+    BEGIN
+        -- Visitor/Standard: get details if the pass booking belongs to this user
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS AttendeeName,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            'TICKET' AS PassType, 
+            CASE WHEN P.PassStatus = 1 THEN 'ACTIVE' ELSE 'INACTIVE' END AS Status,
+            P.CreatedDate AS GeneratedDate,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P
+        INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        WHERE P.PassId = @PassId AND B.UserId = @UserId AND P.IsDeleted = 0;
+    END
 END;
 GO
 
@@ -2184,17 +2665,36 @@ BEGIN
 
     SELECT @PassCode = PassCode FROM OPENJSON(@JsonData) WITH (PassCode NVARCHAR(100) '$.PassCode');
 
-    DECLARE @PassId INT, @IsUsed BIT, @AttendeeName NVARCHAR(200), @EventName NVARCHAR(300);
+    DECLARE @PassId INT, @PassStatus INT, @IsUsed BIT, @AttendeeName NVARCHAR(100), @EventName NVARCHAR(150),
+            @BookingId INT, @EventId INT, @SlotId INT, @SlotDate DATETIME, @StartTime TIME, @HolderEmail NVARCHAR(100),
+            @VenueName NVARCHAR(300), @AddressLine1 NVARCHAR(500), @AddressLine2 NVARCHAR(500), @City NVARCHAR(100),
+            @State NVARCHAR(100), @Country NVARCHAR(100), @GoogleMapLink NVARCHAR(MAX);
 
     SELECT 
         @PassId = P.PassId,
+        @PassStatus = P.PassStatus,
         @IsUsed = P.IsUsed,
         @AttendeeName = A.FullName,
-        @EventName = E.EventName
+        @EventName = E.EventName,
+        @BookingId = P.BookingId,
+        @EventId = B.EventId,
+        @SlotId = B.SlotId,
+        @SlotDate = ES.EventDate,
+        @StartTime = ES.StartTime,
+        @HolderEmail = A.Email,
+        @VenueName = L.VenueName,
+        @AddressLine1 = L.AddressLine1,
+        @AddressLine2 = L.AddressLine2,
+        @City = L.CityId,
+        @State = L.StateId,
+        @Country = L.CountryId,
+        @GoogleMapLink = L.GoogleMapLink
     FROM Tracket_Master_Pass P
     INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
     INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
     INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
+    LEFT JOIN Tracket_Master_Event_Slot ES ON B.SlotId = ES.SlotId
+    LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
     WHERE P.PassNo = @PassCode AND P.IsDeleted = 0;
 
     IF @PassId IS NULL
@@ -2202,24 +2702,185 @@ BEGIN
         SELECT 
             CAST(0 AS BIT) AS IsValid, 
             'Pass not found or invalid.' AS Message,
-            '' AS AttendeeName,
-            '' AS EventName;
+            0 AS PassId,
+            @PassCode AS PassCode,
+            0 AS BookingId,
+            0 AS EventId,
+            '' AS EventName,
+            0 AS SlotId,
+            GETDATE() AS SlotDate,
+            CAST('00:00:00' AS TIME) AS StartTime,
+            '' AS HolderName,
+            '' AS HolderEmail,
+            '' AS VenueName,
+            '' AS AddressLine1,
+            '' AS AddressLine2,
+            '' AS City,
+            '' AS State,
+            '' AS Country,
+            '' AS GoogleMapLink;
     END
-    ELSE IF @IsUsed = 1
+    ELSE IF @PassStatus <> 1 OR @IsUsed = 1
     BEGIN
         SELECT 
             CAST(0 AS BIT) AS IsValid, 
             'Pass is already used or cancelled.' AS Message,
-            @AttendeeName AS AttendeeName,
-            @EventName AS EventName;
+            @PassId AS PassId,
+            @PassCode AS PassCode,
+            @BookingId AS BookingId,
+            @EventId AS EventId,
+            @EventName AS EventName,
+            @SlotId AS SlotId,
+            @SlotDate AS SlotDate,
+            @StartTime AS StartTime,
+            @AttendeeName AS HolderName,
+            @HolderEmail AS HolderEmail,
+            @VenueName AS VenueName,
+            @AddressLine1 AS AddressLine1,
+            @AddressLine2 AS AddressLine2,
+            @City AS City,
+            @State AS State,
+            @Country AS Country,
+            @GoogleMapLink AS GoogleMapLink;
     END
     ELSE
     BEGIN
         SELECT 
             CAST(1 AS BIT) AS IsValid, 
             'Pass is valid.' AS Message,
-            @AttendeeName AS AttendeeName,
-            @EventName AS EventName;
+            @PassId AS PassId,
+            @PassCode AS PassCode,
+            @BookingId AS BookingId,
+            @EventId AS EventId,
+            @EventName AS EventName,
+            @SlotId AS SlotId,
+            @SlotDate AS SlotDate,
+            @StartTime AS StartTime,
+            @AttendeeName AS HolderName,
+            @HolderEmail AS HolderEmail,
+            @VenueName AS VenueName,
+            @AddressLine1 AS AddressLine1,
+            @AddressLine2 AS AddressLine2,
+            @City AS City,
+            @State AS State,
+            @Country AS Country,
+            @GoogleMapLink AS GoogleMapLink;
+    END
+END;
+GO
+
+-- 37b. USP_GetUserPasses
+CREATE OR ALTER PROCEDURE USP_GetUserPasses
+    @UserId INT,
+    @UserRole INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @UserRole = 1
+    BEGIN
+        -- SuperAdmin: get all passes
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S WITH (NOLOCK) ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A WITH (NOLOCK) ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS WITH (NOLOCK) ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z WITH (NOLOCK) ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L WITH (NOLOCK) ON E.EventId = L.EventId
+        WHERE P.IsDeleted = 0 AND B.IsDeleted = 0;
+    END
+    ELSE IF @UserRole = 2
+    BEGIN
+        -- Organizer: get passes for bookings of their own events (filtered by event's UserId)
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S WITH (NOLOCK) ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A WITH (NOLOCK) ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS WITH (NOLOCK) ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z WITH (NOLOCK) ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L WITH (NOLOCK) ON E.EventId = L.EventId
+        WHERE E.UserId = @UserId AND P.IsDeleted = 0 AND B.IsDeleted = 0;
+    END
+    ELSE
+    BEGIN
+        -- Standard/Visitor or fallback: get passes they booked
+        SELECT 
+            P.PassId,
+            P.PassNo AS PassCode,
+            P.BookingId,
+            E.EventName,
+            S.EventDate AS SlotDate,
+            S.StartTime,
+            S.EndTime,
+            S.SlotName,
+            P.SeatNo,
+            Z.ZoneName,
+            P.QRCode,
+            A.FullName AS HolderName,
+            A.Email AS HolderEmail,
+            CASE WHEN P.PassStatus = 1 AND P.IsUsed = 0 THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS IsValid,
+            L.VenueName,
+            L.AddressLine1,
+            L.AddressLine2,
+            L.CityId AS City,
+            L.StateId AS State,
+            L.CountryId AS Country,
+            L.GoogleMapLink
+        FROM Tracket_Master_Pass P WITH (NOLOCK)
+        INNER JOIN Tracket_Master_Booking B WITH (NOLOCK) ON P.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Event E WITH (NOLOCK) ON B.EventId = E.EventId
+        INNER JOIN Tracket_Master_Event_Slot S WITH (NOLOCK) ON B.SlotId = S.SlotId
+        INNER JOIN Tracket_Master_Booking_Attendee A WITH (NOLOCK) ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_Event_Zone_Seat ZS WITH (NOLOCK) ON ZS.BookingId = B.BookingId AND ZS.SeatNumber = P.SeatNo AND ZS.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Zone Z WITH (NOLOCK) ON ZS.ZoneId = Z.ZoneId AND Z.IsDeleted = 0
+        LEFT JOIN Tracket_Master_Event_Location L WITH (NOLOCK) ON E.EventId = L.EventId
+        WHERE B.UserId = @UserId AND P.IsDeleted = 0 AND B.IsDeleted = 0;
     END
 END;
 GO
@@ -2232,26 +2893,28 @@ BEGIN
     SET NOCOUNT ON;
     BEGIN TRANSACTION;
     BEGIN TRY
-        DECLARE @PassCode NVARCHAR(100), @DeviceIdentifier NVARCHAR(100);
+        DECLARE @PassCode NVARCHAR(100), @DeviceIdentifier NVARCHAR(100), @ScannerUserId INT;
 
         SELECT 
             @PassCode = PassCode,
-            @DeviceIdentifier = DeviceIdentifier
+            @DeviceIdentifier = DeviceIdentifier,
+            @ScannerUserId = ScannerUserId
         FROM OPENJSON(@JsonData)
         WITH (
             PassCode NVARCHAR(100) '$.PassCode',
-            DeviceIdentifier NVARCHAR(100) '$.DeviceIdentifier'
+            DeviceIdentifier NVARCHAR(100) '$.DeviceIdentifier',
+            ScannerUserId INT '$.ScannerUserId'
         );
 
-        DECLARE @PassId INT, @IsUsed BIT, @AttendeeName NVARCHAR(200), @EventName NVARCHAR(300), @BookingId INT, @SlotId INT;
+        DECLARE @PassId INT, @PassStatus INT, @IsUsed BIT, @AttendeeName NVARCHAR(100), @EventName NVARCHAR(150), @BookingId INT;
 
         SELECT 
             @PassId = P.PassId,
+            @PassStatus = P.PassStatus,
             @IsUsed = P.IsUsed,
             @AttendeeName = A.FullName,
             @EventName = E.EventName,
-            @BookingId = P.BookingId,
-            @SlotId = B.SlotId
+            @BookingId = P.BookingId
         FROM Tracket_Master_Pass P
         INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
         INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
@@ -2272,21 +2935,53 @@ BEGIN
             RETURN;
         END
 
+        -- Mark pass as used
         UPDATE Tracket_Master_Pass SET IsUsed = 1, UsedDate = GETDATE() WHERE PassId = @PassId;
 
-        INSERT INTO Tracket_Master_Scanner_Log (PassId, BookingId, EventId, SlotId, ScanType, ScannerDevice, ScanDate, IsValid, ValidationMessage)
-        VALUES (@PassId, @BookingId, 1, @SlotId, 'QR', @DeviceIdentifier, GETDATE(), 1, 'Success');
+        -- Record scanner log
+        INSERT INTO Tracket_Master_Scanner_Log (PassId, BookingId, EventId, SlotId, ScanType, ScannerDevice, ScannedBy, ScanDate, IsValid, ValidationMessage, CreatedDate, CreatedBy)
+        VALUES (@PassId, @BookingId, (SELECT EventId FROM Tracket_Master_Booking WHERE BookingId = @BookingId), (SELECT SlotId FROM Tracket_Master_Booking WHERE BookingId = @BookingId), 'ENTRY', @DeviceIdentifier, @ScannerUserId, GETDATE(), 1, 'Pass scanned successfully', GETDATE(), @ScannerUserId);
+
+        DECLARE @LogId INT = SCOPE_IDENTITY();
+
+        -- Queue Attendance Marked Notification
+        INSERT INTO Tracket_Master_Notification (
+            Notification_Public_Id, Module_Name, Reference_Public_Id, User_Public_Id, Notification_Type, Recipient_To, Subject, Message_Body, Status, Retry_Count, Created_At, Is_Active, Is_Deleted
+        )
+        SELECT 
+            NEWID(),
+            'ATTENDANCE',
+            CAST(SUBSTRING(B.BookingRId, 1, 8) + '-' + SUBSTRING(B.BookingRId, 9, 4) + '-' + SUBSTRING(B.BookingRId, 13, 4) + '-' + SUBSTRING(B.BookingRId, 17, 4) + '-' + SUBSTRING(B.BookingRId, 21, 12) AS uniqueidentifier),
+            U.UniqueScanCode,
+            'EMAIL',
+            U.EmailId,
+            'Attendance Marked - Event: ' + E.EventName,
+            'Dear ' + U.Name + ', your pass (' + @PassCode + ') for the event ' + E.EventName + ' has been successfully scanned. Welcome to the event!',
+            'QUEUED',
+            0,
+            GETDATE(),
+            1,
+            0
+        FROM Tracket_Master_Booking B
+        INNER JOIN Tracket_Master_User U ON B.UserId = U.UserId
+        INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
+        WHERE B.BookingId = @BookingId;
 
         COMMIT TRANSACTION;
         SELECT 200 AS ResultStatus, 'Pass scanned successfully.' AS ResultMessage;
 
         SELECT 
-            SCOPE_IDENTITY() AS LogId,
+            @LogId AS LogId,
             @PassCode AS PassCode,
             @AttendeeName AS AttendeeName,
+            @AttendeeName AS HolderName,
             @EventName AS EventName,
             GETDATE() AS ScanTime,
-            'SUCCESS' AS ScanStatus;
+            GETDATE() AS ScanDate,
+            'SUCCESS' AS ScanStatus,
+            1 AS Status,
+            (SELECT ISNULL(Name, 'System') FROM Tracket_Master_User WHERE UserId = @ScannerUserId) AS ScannerUserName,
+            'Pass scanned successfully' AS ValidationMessage;
 
     END TRY
     BEGIN CATCH
@@ -2309,14 +3004,20 @@ BEGIN
             L.ScanLogId AS LogId,
             P.PassNo AS PassCode,
             A.FullName AS AttendeeName,
+            A.FullName AS HolderName,
             E.EventName,
             L.ScanDate AS ScanTime,
-            CASE WHEN L.IsValid = 1 THEN 'SUCCESS' ELSE 'FAILED' END AS ScanStatus
+            L.ScanDate AS ScanDate,
+            CASE WHEN L.IsValid = 1 THEN 'SUCCESS' ELSE 'FAILED' END AS ScanStatus,
+            L.IsValid AS Status,
+            ISNULL(U_SCAN.Name, 'System') AS ScannerUserName,
+            L.ValidationMessage AS ValidationMessage
         FROM Tracket_Master_Scanner_Log L
         INNER JOIN Tracket_Master_Pass P ON L.PassId = P.PassId
-        INNER JOIN Tracket_Master_Booking B ON L.BookingId = B.BookingId
+        INNER JOIN Tracket_Master_Booking B ON P.BookingId = B.BookingId
         INNER JOIN Tracket_Master_Event E ON B.EventId = E.EventId
-        INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId;
+        INNER JOIN Tracket_Master_Booking_Attendee A ON P.AttendeeId = A.AttendeeId
+        LEFT JOIN Tracket_Master_User U_SCAN ON L.ScannedBy = U_SCAN.UserId;
     END
     ELSE IF @ReportType = 'ATTENDANCE'
     BEGIN

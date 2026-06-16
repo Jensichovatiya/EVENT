@@ -48,9 +48,38 @@ namespace EVENT.WebAPI.Controllers
         }
 
         [HttpGet("invoices")]
-        public async Task<IActionResult> GetInvoices()
+        public async Task<IActionResult> GetInvoices([FromQuery] long? userId = null)
         {
-            var result = await _paymentRepository.GetInvoicesAsync();
+            int? resolvedUserRole = null;
+
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (int.TryParse(roleClaim, out int parsedRole))
+            {
+                resolvedUserRole = parsedRole;
+            }
+
+            // Visitor (or other non-authorized roles) cannot view or access invoices at all
+            if (resolvedUserRole != 1 && resolvedUserRole != 2)
+            {
+                return StatusCode(403, new ApiResponseModel<object> { Success = false, StatusCode = 403, Message = "Access denied. Invoices are only accessible to Administrators and Organizers." });
+            }
+
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            long.TryParse(userIdClaim, out long parsedUserId);
+
+            long? resolvedUserId = userId;
+            // Role-based access control: only SuperAdmin (Role 1) can fetch invoices for other user IDs.
+            // Organizer (Role 2) must only be allowed to query using their own UserId.
+            if (resolvedUserRole != 1)
+            {
+                resolvedUserId = parsedUserId;
+            }
+            else if (!resolvedUserId.HasValue)
+            {
+                resolvedUserId = parsedUserId;
+            }
+
+            var result = await _paymentRepository.GetInvoicesAsync(resolvedUserId, resolvedUserRole);
             return StatusCode(result.StatusCode, result);
         }
 
@@ -61,6 +90,16 @@ namespace EVENT.WebAPI.Controllers
                 return BadRequest(new ApiResponseModel<object> { Success = false, StatusCode = 400, Message = "Invalid state input." });
 
             var result = await _paymentRepository.AddPaymentAsync(request);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpPost("payments/fail")]
+        public async Task<IActionResult> RecordFailedPayment([FromBody] PaymentRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new ApiResponseModel<object> { Success = false, StatusCode = 400, Message = "Invalid state input." });
+
+            var result = await _paymentRepository.RecordFailedPaymentAsync(request);
             return StatusCode(result.StatusCode, result);
         }
 

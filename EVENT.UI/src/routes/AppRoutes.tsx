@@ -20,6 +20,7 @@ import SettingsPage from '../pages/SettingsPage';
 import LogsPage from '../pages/LogsPage';
 import ProfilePage from '../pages/ProfilePage';
 import PassesPage from '../pages/PassesPage';
+import BookingPassesPage from '../pages/BookingPassesPage';
 import AttendancePage from '../pages/AttendancePage';
 import Guard from './Guard';
 import { ROUTES, ROLES } from '../constants/appConstants';
@@ -27,6 +28,7 @@ import AssetTypesPage from '../pages/AssetTypesPage';
 import ScannerLogsPage from '../pages/ScannerLogsPage';
 import EventApprovalPage from '../pages/EventApprovalPage';
 import EmployeesPage from '../pages/EmployeesPage';
+import EventSlotsPage from '../pages/EventSlotsPage';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -80,6 +82,14 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
+        path={ROUTES.EVENT_SLOTS}
+        element={
+          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ORGANIZER]}>
+            <EventSlotsPage />
+          </Guard>
+        }
+      />
+      <Route
         path={ROUTES.BOOKINGS}
         element={
           <Guard>
@@ -96,9 +106,17 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
-        path={ROUTES.INVOICES}
+        path={ROUTES.BOOKING_PASSES}
         element={
           <Guard>
+            <BookingPassesPage />
+          </Guard>
+        }
+      />
+      <Route
+        path={ROUTES.INVOICES}
+        element={
+          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ORGANIZER]}>
             <InvoiceListPage />
           </Guard>
         }
@@ -122,7 +140,7 @@ export const AppRoutes: React.FC = () => {
       <Route
         path={ROUTES.ATTENDANCE}
         element={
-          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.EMPLOYEE]}>
+          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.EMPLOYEE, ROLES.SCANNER]}>
             <AttendancePage />
           </Guard>
         }

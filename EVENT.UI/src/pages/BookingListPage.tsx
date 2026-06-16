@@ -49,15 +49,25 @@ export const BookingListPage: React.FC = () => {
     { header: 'Booking No', accessor: 'bookingReference' },
     { header: 'Event Name', accessor: 'eventName' },
     { header: 'User Name', accessor: 'userName' },
-    { header: 'Qty', accessor: 'ticketQty' },
-    { header: 'Net Amount', accessor: (row: any) => `INR ${row.netAmount}` },
+    { header: 'Qty', accessor: 'totalTickets' },
+    { header: 'Net Amount', accessor: (row: any) => `INR ${row.finalAmount}` },
     { header: 'Booking Date', accessor: (row: any) => new Date(row.bookingDate).toLocaleDateString() },
     { header: 'Status', accessor: (row: any) => <StatusChip status={row.bookingStatus} type="booking" /> },
     {
       header: 'Actions',
       accessor: (row: any) => (
-        <Box display="flex" gap={1}>
-          {row.bookingStatus !== 2 && row.bookingStatus !== 4 && (
+        <Box display="flex" gap={1} alignItems="center">
+          {Number(row.bookingStatus) === 1 && (
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => window.open(`/booking/${row.bookingId}/passes`, '_blank')}
+              style={{ textTransform: 'none', borderRadius: 8, padding: '2px 8px', fontSize: '11px' }}
+            >
+              View Pass
+            </Button>
+          )}
+          {Number(row.bookingStatus) !== 2 && Number(row.bookingStatus) !== 4 && (
             <IconButton onClick={() => handleCancelBooking(row.bookingRId)} size="small" color="error">
               <DeleteIcon fontSize="small" />
             </IconButton>
@@ -80,7 +90,7 @@ export const BookingListPage: React.FC = () => {
         <AppTable
           columns={columns}
           data={bookings}
-          searchKey="bookingNumber"
+          searchKey="bookingReference"
           searchPlaceholder="Search by Booking No..."
         />
       )}

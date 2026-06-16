@@ -60,7 +60,7 @@ export const CreateEventPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
 
-  // Form states
+    // Form states
   const [eventData, setEventData] = useState<any>({
     eventId: 0,
     eventRId: '',
@@ -107,7 +107,19 @@ export const CreateEventPage: React.FC = () => {
     twitterLink: '',
     linkedInLink: '',
     pintrestLink: '',
+    userId: null,
     slots: [],
+    // Booking Configuration Fields
+    minBookingQty: null,
+    maxBookingQty: null,
+    maxBookingPerUser: null,
+    allowGroupBooking: false,
+    allowMultipleDateBooking: false,
+    maxGroupMember: null,
+    bookingStartDate: '',
+    bookingEndDate: '',
+    allowSeatSelection: false,
+    allowMultiSlotBooking: false,
   });
 
   const [allCategories, setAllCategories] = useState<any[]>([]);
@@ -216,6 +228,18 @@ export const CreateEventPage: React.FC = () => {
               twitterLink: ev.twitterLink || '',
               linkedInLink: ev.linkedInLink || '',
               pintrestLink: ev.pintrestLink || '',
+              userId: ev.userId || null,
+              // Booking Configuration Fields
+              minBookingQty: ev.minBookingQty ?? null,
+              maxBookingQty: ev.maxBookingQty ?? null,
+              maxBookingPerUser: ev.maxBookingPerUser ?? null,
+              allowGroupBooking: !!ev.allowGroupBooking,
+              allowMultipleDateBooking: !!ev.allowMultipleDateBooking,
+              maxGroupMember: ev.maxGroupMember ?? null,
+              bookingStartDate: ev.bookingStartDate ? ev.bookingStartDate.substring(0, 10) : '',
+              bookingEndDate: ev.bookingEndDate ? ev.bookingEndDate.substring(0, 10) : '',
+              allowSeatSelection: !!ev.allowSeatSelection,
+              allowMultiSlotBooking: !!ev.allowMultiSlotBooking,
             });
             setSlots(ev.slots || []);
           }
@@ -260,7 +284,16 @@ export const CreateEventPage: React.FC = () => {
   };
 
   const onBasicSubmit = (data: any) => {
-    setEventData((prev: any) => ({ ...prev, ...data }));
+    const basicKeys = [
+      'eventName', 'eventCode', 'categoryId', 'eventSubCategoryId', 'ticketPrice', 
+      'capacity', 'currency', 'listingType', 'bookingType', 'eventType', 'about', 
+      'termsAndConditions'
+    ];
+    const filteredBasic: any = {};
+    basicKeys.forEach(k => {
+      if (data[k] !== undefined) filteredBasic[k] = data[k];
+    });
+    setEventData((prev: any) => ({ ...prev, ...filteredBasic }));
     handleNext();
   };
 
@@ -270,11 +303,22 @@ export const CreateEventPage: React.FC = () => {
   };
 
   const onLocSubmit = async (data: any) => {
+    const locationKeys = [
+      'venueName', 'addressLine1', 'addressLine2', 'areaName', 'landmark', 
+      'pincode', 'latitude', 'longitude', 'googleMapLink', 'hallName', 
+      'groundName', 'parkingAvailable', 'parkingDetails', 'countryId', 
+      'stateId', 'cityId'
+    ];
+    const filteredLoc: any = {};
+    locationKeys.forEach(k => {
+      if (data[k] !== undefined) filteredLoc[k] = data[k];
+    });
+
     const enriched = {
       ...eventData,
-      ...data,
-      locationName: data.venueName,
-      address: data.addressLine1
+      ...filteredLoc,
+      locationName: filteredLoc.venueName || data.venueName || eventData.locationName,
+      address: filteredLoc.addressLine1 || data.addressLine1 || eventData.address
     };
     setEventData(enriched);
 
@@ -282,12 +326,14 @@ export const CreateEventPage: React.FC = () => {
     try {
       const userStr = localStorage.getItem('user');
       const userObj = userStr ? JSON.parse(userStr) : null;
-      const userEmail = userObj?.email || userObj?.userName || 'system';
+      const userEmail = localStorage.getItem('email') || userObj?.emailId || userObj?.email || userObj?.userName || 'system';
+      const userIdVal = Number(localStorage.getItem('userId') || 0);
 
       const formData = new FormData();
       const payload = {
         ...enriched,
         slots,
+        userId: userIdVal > 0 ? userIdVal : null,
         createdBy: enriched.eventId > 0 ? enriched.createdBy : userEmail,
         createdFrom: enriched.eventId > 0 ? enriched.createdFrom : 'WebUI',
         updatedBy: userEmail,
@@ -340,13 +386,15 @@ export const CreateEventPage: React.FC = () => {
     try {
       const userStr = localStorage.getItem('user');
       const userObj = userStr ? JSON.parse(userStr) : null;
-      const userEmail = userObj?.email || userObj?.userName || 'system';
+      const userEmail = localStorage.getItem('email') || userObj?.emailId || userObj?.email || userObj?.userName || 'system';
+      const userIdVal = Number(localStorage.getItem('userId') || 0);
 
       const formData = new FormData();
       
       const payload = {
         ...eventData,
         slots,
+        userId: userIdVal > 0 ? userIdVal : null,
         createdBy: eventData.eventId > 0 ? eventData.createdBy : userEmail,
         createdFrom: eventData.eventId > 0 ? eventData.createdFrom : 'WebUI',
         updatedBy: userEmail,
@@ -545,12 +593,7 @@ export const CreateEventPage: React.FC = () => {
           {/* ============ STEP 1: Location & Venue ============ */}
           {activeStep === 1 && (
             <form onSubmit={handleLoc((data) => {
-              const enriched = {
-                ...data,
-                locationName: data.venueName,
-                address: data.addressLine1
-              };
-              onLocSubmit(enriched);
+              onLocSubmit(data);
             }, onLocErrors)}>
               <Typography variant="h6" sx={{ fontWeight: 700, mb: 3 }}>
                 Venue & Location Details
@@ -665,7 +708,7 @@ export const CreateEventPage: React.FC = () => {
                       onChange={(e) => setValueLoc('parkingAvailable', e.target.checked)}
                     />
                   }
-                  label="Parking Available"
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Parking Available</Typography>}
                 />
                 <AppInput
                   label="Parking Details"
@@ -873,7 +916,7 @@ export const CreateEventPage: React.FC = () => {
                       color="primary"
                     />
                   }
-                  label="Accept Bookings"
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Accept Bookings</Typography>}
                 />
                 <FormControlLabel
                   control={
@@ -883,7 +926,7 @@ export const CreateEventPage: React.FC = () => {
                       color="primary"
                     />
                   }
-                  label="Pass Booking Active"
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Pass Booking Active</Typography>}
                 />
                 <FormControlLabel
                   control={
@@ -893,7 +936,124 @@ export const CreateEventPage: React.FC = () => {
                       color="success"
                     />
                   }
-                  label="Publish Immediately"
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Publish Immediately</Typography>}
+                />
+              </Box>
+
+              <Divider sx={{ my: 3 }} />
+
+              {/* ---- Booking Rules ---- */}
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2, color: '#3b82f6' }}>
+                Booking Rules &amp; Configuration
+              </Typography>
+
+              {/* Quantity Limits */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Quantity Limits
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2.5, mt: 1, mb: 2.5 }}>
+                <AppInput
+                  label="Min Booking Qty"
+                  type="number"
+                  value={eventData.minBookingQty ?? ''}
+                  onChange={(e) => setEventData((prev: any) => ({ ...prev, minBookingQty: e.target.value === '' ? null : Number(e.target.value) }))}
+                  placeholder="e.g. 1"
+                />
+                <AppInput
+                  label="Max Booking Qty"
+                  type="number"
+                  value={eventData.maxBookingQty ?? ''}
+                  onChange={(e) => setEventData((prev: any) => ({ ...prev, maxBookingQty: e.target.value === '' ? null : Number(e.target.value) }))}
+                  placeholder="e.g. 10"
+                />
+                <AppInput
+                  label="Max Booking Per User"
+                  type="number"
+                  value={eventData.maxBookingPerUser ?? ''}
+                  onChange={(e) => setEventData((prev: any) => ({ ...prev, maxBookingPerUser: e.target.value === '' ? null : Number(e.target.value) }))}
+                  placeholder="e.g. 5"
+                />
+              </Box>
+
+              {/* Booking Window */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Booking Window
+              </Typography>
+              <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2.5, mt: 1, mb: 2.5 }}>
+                <AppDatePicker
+                  label="Booking Start Date"
+                  value={eventData.bookingStartDate}
+                  onChange={(e: any) => setEventData((prev: any) => ({ ...prev, bookingStartDate: e.target.value }))}
+                />
+                <AppDatePicker
+                  label="Booking End Date"
+                  value={eventData.bookingEndDate}
+                  onChange={(e: any) => setEventData((prev: any) => ({ ...prev, bookingEndDate: e.target.value }))}
+                />
+              </Box>
+
+              {/* Group Booking */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Group Booking
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 1, mb: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={eventData.allowGroupBooking}
+                      onChange={(e) => setEventData((prev: any) => ({ ...prev, allowGroupBooking: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Allow Group Booking</Typography>}
+                />
+              </Box>
+              {eventData.allowGroupBooking && (
+                <Box sx={{ mb: 2.5 }}>
+                  <AppInput
+                    label="Max Group Members"
+                    type="number"
+                    value={eventData.maxGroupMember ?? ''}
+                    onChange={(e) => setEventData((prev: any) => ({ ...prev, maxGroupMember: e.target.value === '' ? null : Number(e.target.value) }))}
+                    placeholder="e.g. 20"
+                  />
+                </Box>
+              )}
+
+              {/* Feature Toggles */}
+              <Typography variant="caption" sx={{ fontWeight: 600, color: '#6b7280', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                Feature Options
+              </Typography>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3, mt: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={eventData.allowMultipleDateBooking}
+                      onChange={(e) => setEventData((prev: any) => ({ ...prev, allowMultipleDateBooking: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Allow Multiple Date Booking</Typography>}
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={eventData.allowSeatSelection}
+                      onChange={(e) => setEventData((prev: any) => ({ ...prev, allowSeatSelection: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Allow Seat Selection</Typography>}
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={eventData.allowMultiSlotBooking}
+                      onChange={(e) => setEventData((prev: any) => ({ ...prev, allowMultiSlotBooking: e.target.checked }))}
+                      color="primary"
+                    />
+                  }
+                  label={<Typography sx={{ color: '#1f2937', fontWeight: 500, fontSize: '0.875rem' }}>Allow Multi-Slot Booking</Typography>}
                 />
               </Box>
 

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EVENT.Core</name>
+    </assembly>
+    <members>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Encrypt(System.String)">
+            <summary> 
+            Encrypt text 
+            </summary> 
+            <param name="value">plain text</param> 
+            <returns>encrypted text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Encrypt(System.String,System.String)">
+            <summary> 
+            Encrypt text by key 
+            </summary> 
+            <param name="value">plain text</param> 
+            <param name="key"> string key</param> 
+            <returns>encrypted text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Encrypt(System.String,System.String,System.String)">
+            <summary> 
+            Encrypt text by key with initialization vector 
+            </summary> 
+            <param name="value">plain text</param> 
+            <param name="key"> string key</param> 
+            <param name="iv">initialization vector</param> 
+            <returns>encrypted text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Decrypt(System.String)">
+            <summary> 
+            Decrypt text 
+            </summary> 
+            <param name="value">encrypted text</param> 
+            <returns>plain text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Decrypt(System.String,System.String)">
+            <summary> 
+            Decrypt text by key 
+            </summary> 
+            <param name="value">encrypted text</param> 
+            <param name="key">string key</param> 
+            <returns>plain text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.Decrypt(System.String,System.String,System.String)">
+            <summary> 
+            Decrypt text by key with initialization vector 
+            </summary> 
+            <param name="value">encrypted text</param> 
+            <param name="key"> string key</param> 
+            <param name="iv">initialization vector</param> 
+            <returns>encrypted text</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.ComputeHash(System.String)">
+            <summary> 
+            Compute Hash 
+            </summary> 
+            <param name="plainText">plain text</param> 
+            <param name="salt">salt string</param> 
+            <returns>string</returns> 
+        </member>
+        <member name="M:EVENT.Core.Encrypt.CryptographyManager.ComputeHash(System.String,System.String,EVENT.Core.Encrypt.HashName)">
+            <summary> 
+            Compute Hash 
+            </summary> 
+            <param name="plainText">plain text</param> 
+            <param name="salt">salt string</param> 
+            <param name="hashName">Hash Name</param> 
+            <returns>string</returns> 
+        </member>
+    </members>
+</doc>

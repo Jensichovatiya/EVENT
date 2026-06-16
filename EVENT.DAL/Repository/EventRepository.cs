@@ -33,6 +33,21 @@ namespace EVENT.DAL.Repository
             {
                 // Upload files
                 var docs = new List<object>();
+                if (model.Documents != null && model.Documents.Count > 0)
+                {
+                    foreach (var doc in model.Documents)
+                    {
+                        docs.Add(new
+                        {
+                            DocumentName = doc.DocumentName,
+                            RelativePath = doc.RelativePath,
+                            IsPrimary = doc.IsPrimary,
+                            DisplayOrder = doc.DisplayOrder,
+                            ThumbnailPath = doc.ThumbnailPath ?? ""
+                        });
+                    }
+                }
+
                 if (attachments != null && attachments.Count > 0)
                 {
                     var uploadsDir = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Uploads");
@@ -55,7 +70,10 @@ namespace EVENT.DAL.Repository
                             docs.Add(new
                              {
                                  DocumentName = file.FileName,
-                                 RelativePath = "/Uploads/" + uniqueName
+                                 RelativePath = "/Uploads/" + uniqueName,
+                                 IsPrimary = false,
+                                 DisplayOrder = 0,
+                                 ThumbnailPath = ""
                              });
                         }
                     }
@@ -95,7 +113,6 @@ namespace EVENT.DAL.Repository
                     model.IsCancelled,
                     model.CancelReason,
                     model.RejectionReason,
-                    model.OrganizerId,
                     model.ShortDescription,
                     model.Slug,
                     model.SeoTitle,
@@ -107,6 +124,7 @@ namespace EVENT.DAL.Repository
                     model.IsFree,
                     model.IsPublic,
                     model.MetaJson,
+                    model.UserId,
                     model.LocationName,
                     model.Address,
                     model.VenueName,
@@ -125,8 +143,23 @@ namespace EVENT.DAL.Repository
                     model.CountryId,
                     model.StateId,
                     model.CityId,
+                    model.CreatedBy,
+                    model.CreatedFrom,
+                    model.UpdatedBy,
+                    model.UpdatedFrom,
                     model.Slots,
-                    Documents = docs
+                    Documents = docs,
+                    // Booking Configuration Fields
+                    model.MinBookingQty,
+                    model.MaxBookingQty,
+                    model.MaxBookingPerUser,
+                    model.AllowGroupBooking,
+                    model.AllowMultipleDateBooking,
+                    model.MaxGroupMember,
+                    model.BookingStartDate,
+                    model.BookingEndDate,
+                    model.AllowSeatSelection,
+                    model.AllowMultiSlotBooking
                 };
 
                 string jsonData = JsonConvert.SerializeObject(payload);
@@ -259,10 +292,8 @@ namespace EVENT.DAL.Repository
                 {
                     parameters.Add("@EventId", id);
                 }
-                else
-                {
-                    parameters.Add("@EventRId", rid);
-                }
+                // Note: USP_GetEvents only accepts @EventId (INT).
+                // If rid is not numeric, no parameter is passed and SP returns 404.
                 DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetEvents", parameters);
 
                 if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)

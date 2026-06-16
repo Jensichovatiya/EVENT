@@ -157,11 +157,11 @@ export const CategoriesPage: React.FC = () => {
     {
       header: 'Featured',
       accessor: (row: any) => (
-        <Chip 
-          label={row.isFeatured ? 'Yes' : 'No'} 
-          color={row.isFeatured ? 'success' : 'default'} 
-          size="small" 
-          sx={{ fontWeight: 600 }} 
+        <Chip
+          label={row.isFeatured ? 'Yes' : 'No'}
+          color={row.isFeatured ? 'success' : 'default'}
+          size="small"
+          sx={{ fontWeight: 600 }}
         />
       )
     },

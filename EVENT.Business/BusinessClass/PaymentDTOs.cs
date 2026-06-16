@@ -32,11 +32,17 @@ namespace EVENT.Business.BusinessClass
         public string InvoiceNumber { get; set; } = string.Empty;
         public long BookingId { get; set; }
         public string BookingReference { get; set; } = string.Empty;
+        public string BookingNo { get; set; } = string.Empty;
+        public string BookingNumber { get; set; } = string.Empty;
         public decimal BaseAmount { get; set; }
+        public decimal SubTotal { get; set; }
         public decimal TaxAmount { get; set; }
         public decimal TotalAmount { get; set; }
         public string Status { get; set; } = string.Empty;
         public DateTime CreatedDate { get; set; }
+        public DateTime InvoiceDate { get; set; }
+        public string EventName { get; set; } = string.Empty;
+        public string CustomerName { get; set; } = string.Empty;
     }
 
     public class PaymentRequest

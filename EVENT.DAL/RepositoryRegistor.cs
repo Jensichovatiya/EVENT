@@ -19,7 +19,8 @@ namespace EVENT.DAL {
                 { typeof(IDropdownRepository), typeof(DropdownRepository) },
                 { typeof(IReportRepository), typeof(ReportRepository) },
                 { typeof(ISettingsRepository), typeof(SettingsRepository) },
-                { typeof(IBlueprintRepository), typeof(BlueprintRepository) }
+                { typeof(IBlueprintRepository), typeof(BlueprintRepository) },
+                { typeof(INotificationRepository), typeof(NotificationRepository) }
             };
             return dic;
         }

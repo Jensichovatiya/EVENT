@@ -10,12 +10,13 @@ export const ProfilePage: React.FC = () => {
   const userName = localStorage.getItem('userName') || 'User';
   const userRole = localStorage.getItem('userRole') || 'Guest';
   const mobileNo = localStorage.getItem('mobileNo') || '';
+  const email = localStorage.getItem('email') || 'user@tracket.com';
 
   const { register, handleSubmit } = useForm({
     defaultValues: {
       userName,
       mobileNo,
-      email: 'user@tracket.com',
+      email,
     }
   });
 

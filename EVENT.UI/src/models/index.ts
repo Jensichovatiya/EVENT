@@ -93,6 +93,7 @@ export interface EventModel {
   cancelReason?: string;
   rejectionReason?: string;
   organizerId?: number;
+  userId?: number;
   shortDescription?: string;
   slug?: string;
   seoTitle?: string;
@@ -139,20 +140,21 @@ export interface Asset {
 
 export interface Booking {
   bookingId: number;
-  bookingNumber: string;
+  bookingRId?: string;
+  bookingReference: string;
   eventId: number;
   eventName?: string;
   userId: number;
   userName?: string;
   slotId: number;
   bookingDate: string;
-  ticketQty: number;
+  totalTickets: number;
   totalAmount: number;
-  discountAmount: number;
-  taxAmount: number;
-  netAmount: number;
+  discountAmount?: number;
+  taxAmount?: number;
+  finalAmount: number;
   bookingStatus: number;
-  paymentStatus: number;
+  paymentStatus?: number;
 }
 
 export interface Invoice {
@@ -165,6 +167,8 @@ export interface Invoice {
   taxAmount: number;
   totalAmount: number;
   pdfPath?: string;
+  eventName?: string;
+  customerName?: string;
 }
 
 export interface Payment {
@@ -188,10 +192,22 @@ export interface Pass {
   slotId: number;
   slotDate?: string;
   startTime?: string;
+  endTime?: string;
+  slotName?: string;
+  seatNo?: string;
+  zoneName?: string;
+  qrCode?: string;
   holderName: string;
   holderEmail: string;
   qrCodePath?: string;
   isValid: boolean;
+  venueName?: string;
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  country?: string;
+  googleMapLink?: string;
 }
 
 export interface AuditLog {

@@ -69,15 +69,13 @@ export function AppTable<T>({
             placeholder={searchPlaceholder}
             value={searchQuery}
             onChange={handleSearchChange}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" />
-                  </InputAdornment>
-                ),
-                style: { borderRadius: 8, maxWidth: 300 }
-              }
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              style: { borderRadius: 8, maxWidth: 300 }
             }}
           />
         </Box>

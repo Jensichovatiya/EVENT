@@ -1,28 +1,28 @@
 {
   "format": 1,
   "restore": {
-    "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Business\\EVENT.Business.csproj": {}
+    "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Business\\EVENT.Business.csproj": {}
   },
   "projects": {
-    "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Business\\EVENT.Business.csproj": {
+    "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Business\\EVENT.Business.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Business\\EVENT.Business.csproj",
+        "projectUniqueName": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Business\\EVENT.Business.csproj",
         "projectName": "EVENT.Business",
-        "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Business\\EVENT.Business.csproj",
-        "packagesPath": "C:\\Users\\sir\\.nuget\\packages\\",
-        "outputPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Business\\obj\\",
+        "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Business\\EVENT.Business.csproj",
+        "packagesPath": "C:\\Users\\Cassowary06\\.nuget\\packages\\",
+        "outputPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Business\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\sir\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Cassowary06\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -30,14 +30,14 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj": {
-                "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj"
+              "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj": {
+                "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj"
               },
-              "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\EVENT.Entities.csproj": {
-                "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\EVENT.Entities.csproj"
+              "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\EVENT.Entities.csproj": {
+                "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\EVENT.Entities.csproj"
               }
             }
           }
@@ -52,11 +52,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Dapper": {
               "target": "Package",
@@ -98,29 +98,29 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj": {
+    "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj",
+        "projectUniqueName": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj",
         "projectName": "EVENT.Core",
-        "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj",
-        "packagesPath": "C:\\Users\\sir\\.nuget\\packages\\",
-        "outputPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\obj\\",
+        "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj",
+        "packagesPath": "C:\\Users\\Cassowary06\\.nuget\\packages\\",
+        "outputPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\sir\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Cassowary06\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -128,8 +128,8 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {}
           }
         },
@@ -143,15 +143,15 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[7.0.5, )"
+              "version": "[8.0.0, )"
             }
           },
           "imports": [
@@ -170,29 +170,29 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\EVENT.Entities.csproj": {
+    "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\EVENT.Entities.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\EVENT.Entities.csproj",
+        "projectUniqueName": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\EVENT.Entities.csproj",
         "projectName": "EVENT.Entities",
-        "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\EVENT.Entities.csproj",
-        "packagesPath": "C:\\Users\\sir\\.nuget\\packages\\",
-        "outputPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Entities\\obj\\",
+        "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\EVENT.Entities.csproj",
+        "packagesPath": "C:\\Users\\Cassowary06\\.nuget\\packages\\",
+        "outputPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Entities\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\sir\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Cassowary06\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net6.0"
+          "net8.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
@@ -200,11 +200,11 @@
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net6.0": {
-            "targetAlias": "net6.0",
+          "net8.0": {
+            "targetAlias": "net8.0",
             "projectReferences": {
-              "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj": {
-                "projectPath": "D:\\JENSI\\Evaan Softtech\\EVENT\\EventProject\\EVENT.Core\\EVENT.Core.csproj"
+              "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj": {
+                "projectPath": "D:\\Mamta\\Event_Project\\EVENT\\EVENT.Core\\EVENT.Core.csproj"
               }
             }
           }
@@ -219,11 +219,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.200"
+        "SdkAnalysisLevel": "10.0.100"
       },
       "frameworks": {
-        "net6.0": {
-          "targetAlias": "net6.0",
+        "net8.0": {
+          "targetAlias": "net8.0",
           "dependencies": {
             "Microsoft.AspNetCore.Http.Features": {
               "target": "Package",
@@ -231,7 +231,7 @@
             },
             "Microsoft.EntityFrameworkCore": {
               "target": "Package",
-              "version": "[7.0.5, )"
+              "version": "[8.0.0, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
@@ -254,7 +254,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.103/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

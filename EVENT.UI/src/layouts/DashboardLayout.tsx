@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Box, Drawer, AppBar, Toolbar, List, ListItem, ListItemButton, ListItemIcon, ListItemText,
-  Typography, IconButton, Avatar, Menu, MenuItem, Divider, useTheme, useMediaQuery
+  Typography, IconButton, Avatar, Menu, MenuItem, Divider, useTheme, useMediaQuery, Badge
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -21,6 +21,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import { notificationApi } from '../api/notificationApi';
 import { ROLES, ROUTES } from '../constants/appConstants';
 
 const drawerWidth = 260;
@@ -32,6 +34,51 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notiAnchorEl, setNotiAnchorEl] = useState<null | HTMLElement>(null);
+  const userId = Number(localStorage.getItem('userId') || 0);
+
+  const fetchNotifications = async () => {
+    if (userId > 0) {
+      try {
+        const res = await notificationApi.getNotifications(userId);
+        if (res.success && res.data) {
+          setNotifications(res.data);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }, [userId]);
+
+  const unreadCount = notifications.filter(n => n.status !== 'READ').length;
+
+  const handleNotiMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setNotiAnchorEl(event.currentTarget);
+  };
+
+  const handleNotiMenuClose = () => {
+    setNotiAnchorEl(null);
+  };
+
+  const handleMarkAsRead = async (notificationId: number) => {
+    try {
+      const res = await notificationApi.markAsRead(notificationId);
+      if (res.success) {
+        setNotifications(prev =>
+          prev.map(n => n.notificationId === notificationId ? { ...n, status: 'READ' } : n)
+        );
+      }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
 
   const role = localStorage.getItem('userRole') || ROLES.VISITOR;
   const userName = localStorage.getItem('userName') || 'User';
@@ -79,7 +126,6 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
           { text: 'Dashboard', icon: <DashboardIcon />, path: ROUTES.DASHBOARD },
           { text: 'My Events', icon: <EventIcon />, path: ROUTES.EVENTS },
           { text: 'Create Event', icon: <AddCircleIcon />, path: ROUTES.EVENT_CREATE },
-          { text: 'Event Slots', icon: <HistoryIcon />, path: ROUTES.EVENT_SLOTS },
           { text: 'Event Assets', icon: <BusinessIcon />, path: ROUTES.ASSETS },
           { text: 'Bookings', icon: <ReceiptLongIcon />, path: ROUTES.BOOKINGS },
           { text: 'Invoices', icon: <ReceiptLongIcon />, path: ROUTES.INVOICES },
@@ -214,6 +260,107 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
             {menuItems.find(item => item.path === location.pathname)?.text || 'Overview'}
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <IconButton onClick={handleNotiMenuOpen} sx={{ color: '#1e293b' }}>
+              <Badge badgeContent={unreadCount} color="error">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <Menu
+              anchorEl={notiAnchorEl}
+              open={Boolean(notiAnchorEl)}
+              onClose={handleNotiMenuClose}
+              slotProps={{ paper: { sx: { mt: 1.5, width: 320, maxHeight: 400, borderRadius: 3, p: 0 } } }}
+            >
+              <Box sx={{ p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e2e8f0' }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Notifications</Typography>
+                {unreadCount > 0 && (
+                  <Typography
+                    variant="caption"
+                    sx={{ color: '#3b82f6', cursor: 'pointer', fontWeight: 600 }}
+                    onClick={async () => {
+                      const unread = notifications.filter(n => n.status !== 'READ');
+                      for (const n of unread) {
+                        await handleMarkAsRead(n.notificationId);
+                      }
+                    }}
+                  >
+                    Mark all as read
+                  </Typography>
+                )}
+              </Box>
+              <List sx={{ p: 0, maxHeight: 300, overflowY: 'auto' }}>
+                {notifications.length === 0 ? (
+                  <ListItem sx={{ py: 3, justifyContent: 'center' }}>
+                    <Typography variant="body2" sx={{ color: '#64748b' }}>No notifications yet</Typography>
+                  </ListItem>
+                ) : (
+                  notifications.map((noti) => (
+                    <React.Fragment key={noti.notificationId}>
+                      <ListItem
+                        alignItems="flex-start"
+                        disablePadding
+                        sx={{
+                          backgroundColor: noti.status !== 'READ' ? 'rgba(59, 130, 246, 0.05)' : 'transparent',
+                          transition: 'background-color 0.2s',
+                          '&:hover': {
+                            backgroundColor: 'rgba(0, 0, 0, 0.02)'
+                          }
+                        }}
+                      >
+                        <ListItemButton
+                          onClick={() => {
+                            if (noti.status !== 'READ') {
+                              handleMarkAsRead(noti.notificationId);
+                            }
+                            handleNotiMenuClose();
+                            if (noti.subject.toLowerCase().includes('pass') || noti.messageBody.toLowerCase().includes('pass')) {
+                              navigate(ROUTES.PASSES);
+                            } else if (noti.subject.toLowerCase().includes('booking') || noti.messageBody.toLowerCase().includes('booking')) {
+                              navigate(ROUTES.BOOKINGS);
+                            }
+                          }}
+                          sx={{ py: 1.5, px: 2, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}
+                        >
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%', mb: 0.5 }}>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                fontWeight: noti.status !== 'READ' ? 700 : 500,
+                                color: noti.status !== 'READ' ? '#1e293b' : '#64748b'
+                              }}
+                            >
+                              {noti.subject}
+                            </Typography>
+                            {noti.status !== 'READ' && (
+                              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#3b82f6', mt: 0.5 }} />
+                            )}
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#64748b',
+                              fontSize: '0.8rem',
+                              lineHeight: 1.4,
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {noti.messageBody}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: '#94a3b8', fontSize: '0.7rem', mt: 0.5 }}>
+                            {new Date(noti.createdAt).toLocaleString()}
+                          </Typography>
+                        </ListItemButton>
+                      </ListItem>
+                      <Divider component="li" />
+                    </React.Fragment>
+                  ))
+                )}
+              </List>
+            </Menu>
+
             <IconButton onClick={handleProfileMenuOpen} sx={{ p: 0 }}>
               <Avatar sx={{ bgcolor: '#8b5cf6' }}>{userName[0].toUpperCase()}</Avatar>
             </IconButton>

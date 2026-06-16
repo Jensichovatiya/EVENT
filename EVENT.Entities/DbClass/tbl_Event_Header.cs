@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
@@ -46,6 +46,18 @@ namespace EVENT.Entities.DbClass
         public bool IsPublishActive { get; set; }
         public bool IsPassBookingActive { get; set; }
         public string? LanguageId {  get; set; }
+
+        // Booking Configuration Fields
+        public long? MinBookingQty { get; set; }
+        public long? MaxBookingQty { get; set; }
+        public long? MaxBookingPerUser { get; set; }
+        public bool AllowGroupBooking { get; set; }
+        public bool AllowMultipleDateBooking { get; set; }
+        public long? MaxGroupMember { get; set; }
+        public DateTime? BookingStartDate { get; set; }
+        public DateTime? BookingEndDate { get; set; }
+        public bool AllowSeatSelection { get; set; }
+        public bool AllowMultiSlotBooking { get; set; }
 
         [XmlIgnore]
         [NotMapped]

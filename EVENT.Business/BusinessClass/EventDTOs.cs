@@ -39,7 +39,7 @@ namespace EVENT.Business.BusinessClass
         public bool IsCancelled { get; set; }
         public string CancelReason { get; set; } = string.Empty;
         public string RejectionReason { get; set; } = string.Empty;
-        public long? OrganizerId { get; set; }
+        public long? UserId { get; set; }
 
         // New Event Fields
         public string ShortDescription { get; set; } = string.Empty;
@@ -79,7 +79,19 @@ namespace EVENT.Business.BusinessClass
         public string CreatedFrom { get; set; } = string.Empty;
         public string UpdatedBy { get; set; } = string.Empty;
         public string UpdatedFrom { get; set; } = string.Empty;
-        
+
+        // Booking Configuration Fields
+        public long? MinBookingQty { get; set; }
+        public long? MaxBookingQty { get; set; }
+        public long? MaxBookingPerUser { get; set; }
+        public bool AllowGroupBooking { get; set; }
+        public bool AllowMultipleDateBooking { get; set; }
+        public long? MaxGroupMember { get; set; }
+        public DateTime? BookingStartDate { get; set; }
+        public DateTime? BookingEndDate { get; set; }
+        public bool AllowSeatSelection { get; set; }
+        public bool AllowMultiSlotBooking { get; set; }
+
         public List<EventSlotDTO> Slots { get; set; } = new List<EventSlotDTO>();
         public List<EventDocumentDTO> Documents { get; set; } = new List<EventDocumentDTO>();
     }
@@ -144,7 +156,7 @@ namespace EVENT.Business.BusinessClass
         public bool IsCancelled { get; set; }
         public string CancelReason { get; set; } = string.Empty;
         public string RejectionReason { get; set; } = string.Empty;
-        public long? OrganizerId { get; set; }
+        public long? UserId { get; set; }
 
         // New Event Fields
         public string ShortDescription { get; set; } = string.Empty;
@@ -185,6 +197,19 @@ namespace EVENT.Business.BusinessClass
         public string UpdatedBy { get; set; } = string.Empty;
         public string UpdatedFrom { get; set; } = string.Empty;
         public bool IsActive { get; set; }
+
+        // Booking Configuration Fields
+        public long? MinBookingQty { get; set; }
+        public long? MaxBookingQty { get; set; }
+        public long? MaxBookingPerUser { get; set; }
+        public bool AllowGroupBooking { get; set; }
+        public bool AllowMultipleDateBooking { get; set; }
+        public long? MaxGroupMember { get; set; }
+        public DateTime? BookingStartDate { get; set; }
+        public DateTime? BookingEndDate { get; set; }
+        public bool AllowSeatSelection { get; set; }
+        public bool AllowMultiSlotBooking { get; set; }
+
         public List<EventSlotResponse> Slots { get; set; } = new List<EventSlotResponse>();
         public List<EventDocumentResponse> Documents { get; set; } = new List<EventDocumentResponse>();
     }
@@ -224,6 +249,8 @@ namespace EVENT.Business.BusinessClass
         public long EventId { get; set; }
         public string EventRId { get; set; } = string.Empty;
         public string NewEventName { get; set; } = string.Empty;
+        public string CreatedBy { get; set; } = string.Empty;
+        public string CreatedFrom { get; set; } = string.Empty;
     }
 
     public class EventAnalyticsResponse

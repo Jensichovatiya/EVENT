@@ -25,7 +25,7 @@ const authSlice = createSlice({
       state.loading = true;
       state.error = null;
     },
-    loginSuccess(state, action: PayloadAction<{ token: string; user: User }>) {
+    loginSuccess(state, action: PayloadAction<{ token: string; user: any }>) {
       state.loading = false;
       state.token = action.payload.token;
       state.user = action.payload.user;
@@ -33,9 +33,10 @@ const authSlice = createSlice({
       localStorage.setItem('authToken', action.payload.token);
       localStorage.setItem('user', JSON.stringify(action.payload.user));
       localStorage.setItem('userRole', action.payload.user.roleName);
-      localStorage.setItem('userName', action.payload.user.userName);
+      localStorage.setItem('userName', action.payload.user.name || action.payload.user.userName || 'User');
       localStorage.setItem('userId', action.payload.user.userId.toString());
       localStorage.setItem('mobileNo', action.payload.user.mobileNo);
+      localStorage.setItem('email', action.payload.user.emailId || action.payload.user.email || '');
     },
     loginFailure(state, action: PayloadAction<string>) {
       state.loading = false;

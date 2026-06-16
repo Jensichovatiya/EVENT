@@ -25,12 +25,10 @@ export const AppModal: React.FC<AppModalProps> = ({
       onClose={onClose}
       fullWidth
       maxWidth={maxWidth}
-      slotProps={{
-        paper: {
-          style: {
-            borderRadius: 12,
-            padding: 8,
-          },
+      PaperProps={{
+        style: {
+          borderRadius: 12,
+          padding: 8,
         },
       }}
     >

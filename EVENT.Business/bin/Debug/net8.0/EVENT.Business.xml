@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>EVENT.Business</name>
+    </assembly>
+    <members>
+        <member name="P:EVENT.Business.Login.VerifyOtpRequest.NewPassword">
+            <summary>
+            In case of Change Password With Otp
+            </summary>
+        </member>
+        <member name="P:Tracket.Models.DbConnectionFactory.ConnectionString">
+            <summary>
+            Resolves the connection string based on ConnectionMode.
+            In Vault mode, parses subdomain from {company}.{product}.localhost
+            and fetches the tenant connection string from Vault API.
+            Falls back to DefaultConnection when no valid subdomain is present.
+            </summary>
+        </member>
+        <member name="M:Tracket.Models.DbConnectionFactory.GetCurrentCompany">
+            <summary>
+            Extracts the company name from the current request subdomain.
+            Returns null if no valid subdomain pattern.
+            </summary>
+        </member>
+    </members>
+</doc>

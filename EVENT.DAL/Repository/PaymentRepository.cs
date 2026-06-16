@@ -166,11 +166,20 @@ namespace EVENT.DAL.Repository
             }
         }
 
-        public async Task<ApiResponseModel<List<InvoiceResponse>>> GetInvoicesAsync()
+        public async Task<ApiResponseModel<List<InvoiceResponse>>> GetInvoicesAsync(long? userId = null, int? userRole = null)
         {
             try
             {
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetInvoices");
+                var parameters = new Dictionary<string, object>();
+                if (userId.HasValue)
+                {
+                    parameters.Add("@UserId", userId.Value);
+                }
+                if (userRole.HasValue)
+                {
+                    parameters.Add("@UserRole", userRole.Value);
+                }
+                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetInvoices", parameters);
                 var list = new List<InvoiceResponse>();
 
                 if (ds != null && ds.Tables.Count > 0)
@@ -315,6 +324,47 @@ namespace EVENT.DAL.Repository
                     Success = false,
                     StatusCode = 400,
                     Message = "Refund failed."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel<string>
+                {
+                    Success = false,
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Errors = new List<string> { ex.StackTrace ?? "" }
+                };
+            }
+        }
+
+        public async Task<ApiResponseModel<string>> RecordFailedPaymentAsync(PaymentRequest request)
+        {
+            try
+            {
+                string jsonData = JsonConvert.SerializeObject(request);
+                var parameters = new Dictionary<string, object> { { "@JsonData", jsonData } };
+                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_RecordFailedPayment", parameters);
+
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    DataRow row = ds.Tables[0].Rows[0];
+                    int status = Convert.ToInt32(row["ResultStatus"]);
+                    string message = Convert.ToString(row["ResultMessage"]) ?? "";
+
+                    return new ApiResponseModel<string>
+                    {
+                        Success = status == 200,
+                        StatusCode = status,
+                        Message = message,
+                        Data = status == 200 ? "Failed payment logged successfully." : null
+                    };
+                }
+                return new ApiResponseModel<string>
+                {
+                    Success = false,
+                    StatusCode = 400,
+                    Message = "Failed to log failed payment."
                 };
             }
             catch (Exception ex)

@@ -32,7 +32,52 @@ namespace EVENT.WebAPI.Controllers
         [HttpGet("passes/{id}")]
         public async Task<IActionResult> GetPassDetails(long id)
         {
-            var result = await _passRepository.GetPassByIdAsync(id);
+            long? resolvedUserId = null;
+            int? resolvedUserRole = null;
+
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (int.TryParse(roleClaim, out int parsedRole))
+            {
+                resolvedUserRole = parsedRole;
+            }
+
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            if (long.TryParse(userIdClaim, out long parsedUserId))
+            {
+                resolvedUserId = parsedUserId;
+            }
+
+            var result = await _passRepository.GetPassByIdAsync(id, resolvedUserId, resolvedUserRole);
+            return StatusCode(result.StatusCode, result);
+        }
+
+        [HttpGet("passes/my-passes")]
+        public async Task<IActionResult> GetUserPasses([FromQuery] long? userId = null)
+        {
+            long resolvedUserId = 0;
+            int? resolvedUserRole = null;
+
+            var roleClaim = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (int.TryParse(roleClaim, out int parsedRole))
+            {
+                resolvedUserRole = parsedRole;
+            }
+
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            long.TryParse(userIdClaim, out long parsedUserId);
+
+            // Role-based access control: only SuperAdmin (Role 1) can fetch passes for other user IDs.
+            // Organizer (Role 2) and Visitor/others must only be allowed to query using their own UserId.
+            if (resolvedUserRole != 1)
+            {
+                resolvedUserId = parsedUserId;
+            }
+            else
+            {
+                resolvedUserId = userId ?? parsedUserId;
+            }
+
+            var result = await _passRepository.GetUserPassesAsync(resolvedUserId, resolvedUserRole);
             return StatusCode(result.StatusCode, result);
         }
 

@@ -1,26 +1,26 @@
 using EVENT.Business.BusinessClass;
-using EVENT.Business.Helper;
+using EVENT.Business.Settings;
 using EVENT.DAL.IRepository;
 using EVENT.Web.Models;
-using INvoice.Models;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 
 namespace EVENT.DAL.Repository
 {
-    public class BookingRepository : IBookingRepository
+    public class BookingRepository : BaseRepository, IBookingRepository
     {
-        private readonly IGeneralFunctions _gf;
         private readonly IConfiguration _config;
 
-        public BookingRepository(IGeneralFunctions gf, IConfiguration config)
+        public BookingRepository(IOptions<ApplicationSettings> connectionString, IConfiguration config) : base(connectionString)
         {
-            _gf = gf;
             _config = config;
         }
 
@@ -29,45 +29,44 @@ namespace EVENT.DAL.Repository
             try
             {
                 string jsonData = JsonConvert.SerializeObject(request);
-                var parameters = new Dictionary<string, object> { { "@JsonData", jsonData } };
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_CreateUpdateBooking", parameters);
+                var parameters = new { JsonData = jsonData };
 
-                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                using (var connection = new SqlConnection(_connectionString.Value.ConnectionString))
                 {
-                    DataRow statusRow = ds.Tables[0].Rows[0];
-                    int statusCode = Convert.ToInt32(statusRow["ResultStatus"]);
-                    string message = Convert.ToString(statusRow["ResultMessage"]) ?? "";
-
-                    if (statusCode == 200 || statusCode == 201)
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("USP_CreateUpdateBooking", parameters, commandType: CommandType.StoredProcedure))
                     {
-                        BookingResponse? responseObj = null;
-                        if (ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0)
+                        var status = await multi.ReadFirstOrDefaultAsync<dynamic>();
+                        if (status != null)
                         {
-                            responseObj = DataRowToObject.CreateItemFromRow<BookingResponse>(ds.Tables[1].Rows[0]);
+                            int statusCode = (int)status.ResultStatus;
+                            string message = (string)status.ResultMessage;
 
-                            if (ds.Tables.Count > 2)
+                            if (statusCode == 200 || statusCode == 201)
                             {
-                                responseObj.Attendees = ds.Tables[2].AsEnumerable()
-                                    .Select(row => DataRowToObject.CreateItemFromRow<AttendeeResponse>(row))
-                                    .ToList();
+                                var booking = await multi.ReadFirstOrDefaultAsync<BookingResponse>();
+                                if (booking != null)
+                                {
+                                    booking.Attendees = (await multi.ReadAsync<AttendeeResponse>()).ToList();
+                                }
+
+                                return new ApiResponseModel<BookingResponse>
+                                {
+                                    Success = true,
+                                    StatusCode = statusCode,
+                                    Message = message,
+                                    Data = booking
+                                };
                             }
+
+                            return new ApiResponseModel<BookingResponse>
+                            {
+                                Success = false,
+                                StatusCode = statusCode,
+                                Message = message
+                            };
                         }
-
-                        return new ApiResponseModel<BookingResponse>
-                        {
-                            Success = true,
-                            StatusCode = statusCode,
-                            Message = message,
-                            Data = responseObj
-                        };
                     }
-
-                    return new ApiResponseModel<BookingResponse>
-                    {
-                        Success = false,
-                        StatusCode = statusCode,
-                        Message = message
-                    };
                 }
 
                 return new ApiResponseModel<BookingResponse>
@@ -93,34 +92,28 @@ namespace EVENT.DAL.Repository
         {
             try
             {
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetBookings");
-                var bookings = new List<BookingResponse>();
-
-                if (ds != null && ds.Tables.Count > 0)
+                using (var connection = new SqlConnection(_connectionString.Value.ConnectionString))
                 {
-                    var bookingTable = ds.Tables[0];
-                    var attendeeTable = ds.Tables.Count > 1 ? ds.Tables[1] : new DataTable();
-
-                    foreach (DataRow row in bookingTable.Rows)
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("USP_GetBookings", commandType: CommandType.StoredProcedure))
                     {
-                        var bk = DataRowToObject.CreateItemFromRow<BookingResponse>(row);
+                        var bookings = (await multi.ReadAsync<BookingResponse>()).ToList();
+                        var attendees = (await multi.ReadAsync<AttendeeResponse>()).ToList();
 
-                        bk.Attendees = attendeeTable.AsEnumerable()
-                            .Where(r => Convert.ToInt64(r["BookingId"]) == bk.BookingId)
-                            .Select(r => DataRowToObject.CreateItemFromRow<AttendeeResponse>(r))
-                            .ToList();
+                        foreach (var bk in bookings)
+                        {
+                            bk.Attendees = attendees.Where(a => a.BookingId == bk.BookingId).ToList();
+                        }
 
-                        bookings.Add(bk);
+                        return new ApiResponseModel<List<BookingResponse>>
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "Bookings retrieved successfully.",
+                            Data = bookings
+                        };
                     }
                 }
-
-                return new ApiResponseModel<List<BookingResponse>>
-                {
-                    Success = true,
-                    StatusCode = 200,
-                    Message = "Bookings retrieved successfully.",
-                    Data = bookings
-                };
             }
             catch (Exception ex)
             {
@@ -138,7 +131,7 @@ namespace EVENT.DAL.Repository
         {
             try
             {
-                var parameters = new Dictionary<string, object>();
+                var parameters = new DynamicParameters();
                 if (long.TryParse(rid, out long id))
                 {
                     parameters.Add("@BookingId", id);
@@ -147,26 +140,26 @@ namespace EVENT.DAL.Repository
                 {
                     parameters.Add("@BookingRId", rid);
                 }
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetBookings", parameters);
 
-                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                using (var connection = new SqlConnection(_connectionString.Value.ConnectionString))
                 {
-                    var bk = DataRowToObject.CreateItemFromRow<BookingResponse>(ds.Tables[0].Rows[0]);
-
-                    if (ds.Tables.Count > 1)
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("USP_GetBookings", parameters, commandType: CommandType.StoredProcedure))
                     {
-                        bk.Attendees = ds.Tables[1].AsEnumerable()
-                            .Select(r => DataRowToObject.CreateItemFromRow<AttendeeResponse>(r))
-                            .ToList();
+                        var booking = await multi.ReadFirstOrDefaultAsync<BookingResponse>();
+                        if (booking != null)
+                        {
+                            booking.Attendees = (await multi.ReadAsync<AttendeeResponse>()).ToList();
+
+                            return new ApiResponseModel<BookingResponse>
+                            {
+                                Success = true,
+                                StatusCode = 200,
+                                Message = "Booking retrieved successfully.",
+                                Data = booking
+                            };
+                        }
                     }
-
-                    return new ApiResponseModel<BookingResponse>
-                    {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "Booking retrieved successfully.",
-                        Data = bk
-                    };
                 }
 
                 return new ApiResponseModel<BookingResponse>
@@ -193,22 +186,25 @@ namespace EVENT.DAL.Repository
             try
             {
                 string jsonData = JsonConvert.SerializeObject(request);
-                var parameters = new Dictionary<string, object> { { "@JsonData", jsonData } };
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_CancelBooking", parameters);
+                var parameters = new { JsonData = jsonData };
 
-                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                using (var connection = new SqlConnection(_connectionString.Value.ConnectionString))
                 {
-                    DataRow row = ds.Tables[0].Rows[0];
-                    int status = Convert.ToInt32(row["ResultStatus"]);
-                    string message = Convert.ToString(row["ResultMessage"]) ?? "";
-
-                    return new ApiResponseModel<string>
+                    await connection.OpenAsync();
+                    var row = await connection.QueryFirstOrDefaultAsync<dynamic>("USP_CancelBooking", parameters, commandType: CommandType.StoredProcedure);
+                    if (row != null)
                     {
-                        Success = status == 200,
-                        StatusCode = status,
-                        Message = message,
-                        Data = status == 200 ? "Booking cancelled successfully" : null
-                    };
+                        int status = (int)row.ResultStatus;
+                        string message = (string)row.ResultMessage;
+
+                        return new ApiResponseModel<string>
+                        {
+                            Success = status == 200,
+                            StatusCode = status,
+                            Message = message,
+                            Data = status == 200 ? "Booking cancelled successfully" : null
+                        };
+                    }
                 }
 
                 return new ApiResponseModel<string>
@@ -234,23 +230,28 @@ namespace EVENT.DAL.Repository
         {
             try
             {
-                var parameters = new Dictionary<string, object>
-                {
-                    { "@EventId", request.EventId },
-                    { "@SlotId", request.SlotId }
-                };
-                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_CheckSeatAvailability", parameters);
+                var parameters = new { EventId = request.EventId, SlotId = request.SlotId };
 
-                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                using (var connection = new SqlConnection(_connectionString.Value.ConnectionString))
                 {
-                    var availability = DataRowToObject.CreateItemFromRow<SeatAvailabilityResponse>(ds.Tables[0].Rows[0]);
-                    return new ApiResponseModel<SeatAvailabilityResponse>
+                    await connection.OpenAsync();
+                    using (var multi = await connection.QueryMultipleAsync("USP_CheckSeatAvailability", parameters, commandType: CommandType.StoredProcedure))
                     {
-                        Success = true,
-                        StatusCode = 200,
-                        Message = "Seat availability checked successfully.",
-                        Data = availability
-                    };
+                        var availability = await multi.ReadFirstOrDefaultAsync<SeatAvailabilityResponse>();
+                        if (availability != null)
+                        {
+                            var bookedSeats = await multi.ReadAsync<string>();
+                            availability.BookedSeatNumbers = bookedSeats.ToList();
+
+                            return new ApiResponseModel<SeatAvailabilityResponse>
+                            {
+                                Success = true,
+                                StatusCode = 200,
+                                Message = "Seat availability checked successfully.",
+                                Data = availability
+                            };
+                        }
+                    }
                 }
 
                 return new ApiResponseModel<SeatAvailabilityResponse>
@@ -273,3 +274,4 @@ namespace EVENT.DAL.Repository
         }
     }
 }
+

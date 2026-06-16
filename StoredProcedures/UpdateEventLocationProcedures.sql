@@ -41,14 +41,15 @@ BEGIN
             @IsCancelled BIT,
             @CancelReason NVARCHAR(MAX),
             @RejectionReason NVARCHAR(MAX),
-            @OrganizerId BIGINT,
-            @CreatedBy BIGINT,
+            @CreatedBy NVARCHAR(200),
             @CreatedFrom NVARCHAR(100),
-            @UpdatedBy BIGINT,
+            @UpdatedBy NVARCHAR(200),
             @UpdatedFrom NVARCHAR(100),
+            @EventRId NVARCHAR(100),
             
             -- New Event Fields
             @ShortDescription NVARCHAR(500),
+            @UserId BIGINT,
             @Slug NVARCHAR(300),
             @SeoTitle NVARCHAR(300),
             @SeoDescription NVARCHAR(MAX),
@@ -112,14 +113,15 @@ BEGIN
             @IsCancelled = IsCancelled,
             @CancelReason = CancelReason,
             @RejectionReason = RejectionReason,
-            @OrganizerId = OrganizerId,
             @CreatedBy = CreatedBy,
             @CreatedFrom = CreatedFrom,
             @UpdatedBy = UpdatedBy,
             @UpdatedFrom = UpdatedFrom,
+            @EventRId = EventRId,
             
             -- New Event fields
             @ShortDescription = ShortDescription,
+            @UserId = UserId,
             @Slug = Slug,
             @SeoTitle = SeoTitle,
             @SeoDescription = SeoDescription,
@@ -183,14 +185,15 @@ BEGIN
             IsCancelled BIT '$.IsCancelled',
             CancelReason NVARCHAR(MAX) '$.CancelReason',
             RejectionReason NVARCHAR(MAX) '$.RejectionReason',
-            OrganizerId BIGINT '$.OrganizerId',
-            CreatedBy BIGINT '$.CreatedBy',
+            CreatedBy NVARCHAR(200) '$.CreatedBy',
             CreatedFrom NVARCHAR(100) '$.CreatedFrom',
-            UpdatedBy BIGINT '$.UpdatedBy',
+            UpdatedBy NVARCHAR(200) '$.UpdatedBy',
             UpdatedFrom NVARCHAR(100) '$.UpdatedFrom',
+            EventRId NVARCHAR(100) '$.EventRId',
             
             -- New Event DTO mappings
             ShortDescription NVARCHAR(500) '$.ShortDescription',
+            UserId BIGINT '$.UserId',
             Slug NVARCHAR(300) '$.Slug',
             SeoTitle NVARCHAR(300) '$.SeoTitle',
             SeoDescription NVARCHAR(MAX) '$.SeoDescription',
@@ -236,24 +239,37 @@ BEGIN
         IF @AddressLine1 IS NULL OR @AddressLine1 = ''
             SET @AddressLine1 = @Address;
 
+        -- Look up @UserId by email if it is null/zero since @CreatedBy is now the user's email
+        IF @UserId IS NULL OR @UserId = 0
+        BEGIN
+            SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE EmailId = @CreatedBy AND IsDeleted = 0;
+            IF @UserId IS NULL OR @UserId = 0
+                SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE Name = @CreatedBy AND IsDeleted = 0;
+        END
+
+        IF @EventRId IS NULL OR @EventRId = ''
+        BEGIN
+            SET @EventRId = 'EVT-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12));
+        END
+
         IF @EventId = 0
         BEGIN
             INSERT INTO Tracket_Master_Event (
-                EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
+                EventRId, EventName, EventCode, EventCategoryId, EventSubCategoryId, ThumbnailImage, BannerImage, 
                 About, TermsAndConditions, FacebookLink, WebsiteLink, YoutubeLink, InstagramLink, 
                 TwitterLink, LinkedInLink, PintrestLink, ListingType, IsBookingAccept, BookingType, 
                 Currency, EventType, IsPublishActive, IsPassBookingActive, Status, ApprovalStatus, 
-                Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, OrganizerId, 
+                Capacity, TicketPrice, IsCancelled, CancelReason, RejectionReason, UserId,
                 ShortDescription, Slug, SeoTitle, SeoDescription, SeoKeywords, Tags, StartDate, EndDate,
                 IsFree, IsPublic, MetaJson, IsDeleted, CreatedBy, CreatedDate, CreatedFrom
             )
             VALUES (
-                @EventName, @EventCode, @EventCategoryId, @EventSubCategoryId, @ThumbnailImage, @BannerImage, 
+                @EventRId, @EventName, @EventCode, @EventCategoryId, @EventSubCategoryId, @ThumbnailImage, @BannerImage, 
                 @About, @TermsAndConditions, @FacebookLink, @WebsiteLink, @YoutubeLink, @InstagramLink, 
                 @TwitterLink, @LinkedInLink, @PintrestLink, @ListingType, ISNULL(@IsBookingAccept, 1), @BookingType, 
                 ISNULL(@Currency, 'INR'), @EventType, ISNULL(@IsPublishActive, 0), ISNULL(@IsPassBookingActive, 1), 
                 ISNULL(@Status, 0), ISNULL(@ApprovalStatus, 0), @Capacity, @TicketPrice, ISNULL(@IsCancelled, 0), 
-                @CancelReason, @RejectionReason, @OrganizerId, 
+                @CancelReason, @RejectionReason, @UserId,
                 @ShortDescription, @Slug, @SeoTitle, @SeoDescription, @SeoKeywords, @Tags, @StartDate, @EndDate,
                 ISNULL(@IsFree, 0), ISNULL(@IsPublic, 1), @MetaJson,
                 0, @CreatedBy, GETDATE(), @CreatedFrom
@@ -342,8 +358,7 @@ BEGIN
                 TicketPrice = @TicketPrice,
                 IsCancelled = ISNULL(@IsCancelled, IsCancelled),
                 CancelReason = @CancelReason,
-                RejectionReason = @RejectionReason,
-                OrganizerId = @OrganizerId,
+                UserId = @UserId,
                 ShortDescription = @ShortDescription,
                 Slug = @Slug,
                 SeoTitle = @SeoTitle,
@@ -430,24 +445,25 @@ BEGIN
 
         -- Return Event Info with all columns
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
             E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
             L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
             L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
-            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.EventId = @EventId;
 
         -- Return Slots
-        SELECT SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
+        SELECT SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE EventId = @EventId AND IsDeleted = 0;
 
@@ -475,23 +491,24 @@ BEGIN
     IF @EventId IS NOT NULL
     BEGIN
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
             E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
             L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
             L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
-            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.EventId = @EventId AND E.IsDeleted = 0;
 
-        SELECT SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
+        SELECT SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE EventId = @EventId AND IsDeleted = 0;
 
@@ -502,23 +519,24 @@ BEGIN
     ELSE
     BEGIN
         SELECT 
-            E.EventId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
             E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
             E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
             E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
             E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
             E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
-            E.RejectionReason, E.OrganizerId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
             E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
             L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
             L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
-            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
         FROM Tracket_Master_Event E
         INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
         LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
         WHERE E.IsDeleted = 0;
 
-        SELECT EventId, SlotId, EventDate AS SlotDate, StartTime, EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
+        SELECT EventId, SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
         FROM Tracket_Master_Event_Slot 
         WHERE IsDeleted = 0;
 

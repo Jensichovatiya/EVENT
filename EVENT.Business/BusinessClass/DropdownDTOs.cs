@@ -24,9 +24,34 @@ namespace EVENT.Business.BusinessClass
         public List<DropdownItem> AssetTypes { get; set; } = new List<DropdownItem>();
     }
 
+    public class EventSlotDropdownItem
+    {
+        public long Value { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public long SlotId { get; set; }
+        public long EventId { get; set; }
+        public string EventName { get; set; } = string.Empty;
+        public System.DateTime SlotDate { get; set; }
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public string SlotName { get; set; } = string.Empty;
+        public decimal TicketPrice { get; set; }
+    }
+
     public class BookingDDLResponse
     {
-        public List<DropdownItem> Events { get; set; } = new List<DropdownItem>();
+        public List<EventSlotDropdownItem> EventSlots { get; set; } = new List<EventSlotDropdownItem>();
+        public List<ZoneDropdownItem> Zones { get; set; } = new List<ZoneDropdownItem>();
+    }
+
+    public class ZoneDropdownItem
+    {
+        public long Value { get; set; }
+        public string Label { get; set; } = string.Empty;
+        public decimal SeatPrice { get; set; }
+        public int Capacity { get; set; }
+        public long BlueprintId { get; set; }
+        public long EventId { get; set; }
     }
 
     public class CurrencyDropdownItem

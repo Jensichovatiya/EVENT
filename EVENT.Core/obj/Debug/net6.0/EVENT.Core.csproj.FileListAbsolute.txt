@@ -28,3 +28,18 @@ D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\refint\EV
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.xml
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\EVENT.Core.pdb
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Core\obj\Debug\net6.0\ref\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Core\bin\Debug\net6.0\EVENT.Core.deps.json
+D:\Mamta\Event_Project\EVENT\EVENT.Core\bin\Debug\net6.0\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Core\bin\Debug\net6.0\EVENT.Core.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Core\bin\Debug\net6.0\EVENT.Core.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.csproj.AssemblyReference.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.AssemblyInfoInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.AssemblyInfo.cs
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.csproj.CoreCompileInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.sourcelink.json
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\refint\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\EVENT.Core.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Core\obj\Debug\net6.0\ref\EVENT.Core.dll

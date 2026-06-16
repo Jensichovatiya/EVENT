@@ -42,3 +42,25 @@ D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\refin
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.xml
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\EVENT.Business.pdb
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.Business\obj\Debug\net6.0\ref\EVENT.Business.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Business.deps.json
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Business.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Business.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Business.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Core.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Core.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Business\bin\Debug\net6.0\EVENT.Entities.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.csproj.AssemblyReference.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.GeneratedMSBuildEditorConfig.editorconfig
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.AssemblyInfoInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.AssemblyInfo.cs
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.csproj.CoreCompileInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.sourcelink.json
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Bu.9BCC218B.Up2Date
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\refint\EVENT.Business.dll
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.xml
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\EVENT.Business.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.Business\obj\Debug\net6.0\ref\EVENT.Business.dll

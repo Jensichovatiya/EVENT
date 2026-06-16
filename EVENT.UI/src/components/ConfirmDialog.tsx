@@ -21,7 +21,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   cancelText = 'Cancel'
 }) => {
   return (
-    <Dialog open={open} onClose={onClose} slotProps={{ paper: { style: { borderRadius: 12 } } }}>
+    <Dialog open={open} onClose={onClose} PaperProps={{ style: { borderRadius: 12 } }}>
       <DialogTitle style={{ fontWeight: 600 }}>{title}</DialogTitle>
       <DialogContent>
         <Typography variant="body1" color="textSecondary">{message}</Typography>

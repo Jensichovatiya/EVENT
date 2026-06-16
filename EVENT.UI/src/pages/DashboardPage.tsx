@@ -10,6 +10,8 @@ import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import BusinessIcon from '@mui/icons-material/Business';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 
+import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
+
 export const DashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const role = localStorage.getItem('userRole') || ROLES.VISITOR;
@@ -183,7 +185,7 @@ export const DashboardPage: React.FC = () => {
 
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6}>
-          <Card style={{ borderRadius: 12, p: 2 }}>
+          <Card sx={{ borderRadius: 12, p: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom style={{ fontWeight: 600 }}>Launch Pass Scanner</Typography>
               <Typography variant="body2" color="textSecondary" paragraph>
@@ -196,7 +198,7 @@ export const DashboardPage: React.FC = () => {
           </Card>
         </Grid>
         <Grid item xs={12} sm={6}>
-          <Card style={{ borderRadius: 12, p: 2 }}>
+          <Card sx={{ borderRadius: 12, p: 2 }}>
             <CardContent>
               <Typography variant="h6" gutterBottom style={{ fontWeight: 600 }}>Attendance logs</Typography>
               <Typography variant="body2" color="textSecondary" paragraph>

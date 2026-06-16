@@ -35,6 +35,7 @@ export const ROUTES = {
   CHECKOUT: '/booking/checkout',
   PASSES: '/passes',
   PASS_DETAILS: '/passes/:id',
+  BOOKING_PASSES: '/booking/:bookingId/passes',
 
   // Payments & Invoices
   INVOICES: '/invoices',

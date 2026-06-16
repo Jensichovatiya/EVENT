@@ -98,7 +98,7 @@ export const SettingsPage: React.FC = () => {
     try {
       const userStr = localStorage.getItem('user');
       const userObj = userStr ? JSON.parse(userStr) : null;
-      const userEmail = userObj?.email || userObj?.userName || 'system';
+      const userEmail = localStorage.getItem('email') || userObj?.emailId || userObj?.email || userObj?.userName || 'system';
 
       const payload = {
         currencyId: editingCurrency ? editingCurrency.currencyId : 0,

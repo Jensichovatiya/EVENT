@@ -13,6 +13,13 @@ export const paymentApi = {
     });
   },
 
+  recordFailedPayment: (data: any): Promise<ApiResponseModel<string>> => {
+    return fetchClient('/payments/fail', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
   refundPayment: (data: any): Promise<ApiResponseModel<string>> => {
     return fetchClient('/payments/refund', {
       method: 'POST',

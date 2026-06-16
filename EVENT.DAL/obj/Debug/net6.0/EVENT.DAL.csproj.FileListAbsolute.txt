@@ -52,3 +52,30 @@ D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\refint\EVE
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.xml
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.pdb
 D:\JENSI\Evaan Softtech\EVENT\EventProject\EVENT.DAL\obj\Debug\net6.0\ref\EVENT.DAL.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\Resources\accountVerifiedWithPassword.txt
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\Resources\confirmMailAddress.txt
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.deps.json
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.DAL.xml
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Business.xml
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Core.xml
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\bin\Debug\net6.0\EVENT.Entities.xml
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.AssemblyReference.cache
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.GeneratedMSBuildEditorConfig.editorconfig
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.AssemblyInfoInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.AssemblyInfo.cs
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.CoreCompileInputs.cache
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.sourcelink.json
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.csproj.Up2Date
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\refint\EVENT.DAL.dll
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.xml
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\EVENT.DAL.pdb
+D:\Mamta\Event_Project\EVENT\EVENT.DAL\obj\Debug\net6.0\ref\EVENT.DAL.dll

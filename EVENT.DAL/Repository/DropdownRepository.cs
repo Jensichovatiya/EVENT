@@ -194,15 +194,42 @@ namespace EVENT.DAL.Repository
                     int status = Convert.ToInt32(ds.Tables[0].Rows[0]["ResultStatus"]);
                     string message = Convert.ToString(ds.Tables[0].Rows[0]["ResultMessage"]) ?? "";
 
-                    if (status == 200 && ds.Tables.Count > 1)
+                    if (status == 200)
                     {
-                        foreach (DataRow row in ds.Tables[1].Rows)
+                        if (ds.Tables.Count > 1)
                         {
-                            response.Events.Add(new DropdownItem
+                            foreach (DataRow row in ds.Tables[1].Rows)
                             {
-                                Value = Convert.ToInt64(row["EventId"]),
-                                Label = Convert.ToString(row["EventName"]) ?? ""
-                            });
+                                response.EventSlots.Add(new EventSlotDropdownItem
+                                {
+                                    Value = Convert.ToInt64(row["Value"]),
+                                    Label = Convert.ToString(row["Label"]) ?? "",
+                                    SlotId = Convert.ToInt64(row["SlotId"]),
+                                    EventId = Convert.ToInt64(row["EventId"]),
+                                    EventName = Convert.ToString(row["EventName"]) ?? "",
+                                    SlotDate = Convert.ToDateTime(row["SlotDate"]),
+                                    StartTime = Convert.ToString(row["StartTime"]) ?? "",
+                                    EndTime = Convert.ToString(row["EndTime"]) ?? "",
+                                    SlotName = Convert.ToString(row["SlotName"]) ?? "",
+                                    TicketPrice = Convert.ToDecimal(row["TicketPrice"])
+                                });
+                            }
+                        }
+
+                        if (ds.Tables.Count > 2)
+                        {
+                            foreach (DataRow row in ds.Tables[2].Rows)
+                            {
+                                response.Zones.Add(new ZoneDropdownItem
+                                {
+                                    Value = Convert.ToInt64(row["ZoneId"]),
+                                    Label = Convert.ToString(row["ZoneName"]) ?? "",
+                                    SeatPrice = Convert.ToDecimal(row["SeatPrice"]),
+                                    Capacity = Convert.ToInt32(row["Capacity"]),
+                                    BlueprintId = Convert.ToInt64(row["BlueprintId"]),
+                                    EventId = Convert.ToInt64(row["EventId"])
+                                });
+                            }
                         }
 
                         return new ApiResponseModel<BookingDDLResponse>
