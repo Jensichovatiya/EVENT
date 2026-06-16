@@ -1,0 +1,108 @@
+{
+  "auth": {
+    "register": {
+      "request": {
+        "name": "Jane Doe",
+        "mobileNo": "9876543210",
+        "dialCode": "+91",
+        "emailId": "jane.doe@example.com",
+        "password": "hashed_password_string",
+        "userRole": 2,
+        "refferalCode": "REFER123"
+      },
+      "response": {
+        "success": true,
+        "statusCode": 201,
+        "message": "User registered successfully.",
+        "data": {
+          "userId": 42,
+          "name": "Jane Doe",
+          "mobileNo": "9876543210",
+          "emailId": "jane.doe@example.com",
+          "token": "JWT_TOKEN_HERE",
+          "userRole": 2,
+          "roleName": "User"
+        },
+        "errors": null
+      }
+    },
+    "login": {
+      "request": {
+        "userName": "jane.doe@example.com",
+        "password": "hashed_password_string"
+      },
+      "response": {
+        "success": true,
+        "statusCode": 200,
+        "message": "Login successful.",
+        "data": {
+          "userId": 42,
+          "name": "Jane Doe",
+          "mobileNo": "9876543210",
+          "emailId": "jane.doe@example.com",
+          "token": "JWT_TOKEN_HERE",
+          "userRole": 2,
+          "roleName": "User"
+        },
+        "errors": null
+      }
+    }
+  },
+  "event": {
+    "addEdit": {
+      "request": {
+        "eventId": 0,
+        "eventName": "Tech Summit 2026",
+        "description": "Annual tech summit",
+        "categoryId": 1,
+        "locationName": "Main Convention Hall",
+        "address": "123 Business Rd, Metropolis",
+        "latitude": 40.7128,
+        "longitude": -74.006,
+        "slots": [
+          {
+            "slotId": 0,
+            "slotDate": "2026-07-15T00:00:00Z",
+            "startTime": "09:00:00",
+            "endTime": "17:00:00",
+            "capacity": 500
+          }
+        ]
+      },
+      "response": {
+        "success": true,
+        "statusCode": 201,
+        "message": "Event created successfully.",
+        "data": {
+          "eventId": 10,
+          "eventName": "Tech Summit 2026",
+          "description": "Annual tech summit",
+          "categoryId": 1,
+          "categoryName": "Conferences",
+          "locationName": "Main Convention Hall",
+          "address": "123 Business Rd, Metropolis",
+          "latitude": 40.7128,
+          "longitude": -74.006,
+          "isActive": true,
+          "slots": [
+            {
+              "slotId": 15,
+              "slotDate": "2026-07-15T00:00:00Z",
+              "startTime": "09:00:00",
+              "endTime": "17:00:00",
+              "capacity": 500
+            }
+          ],
+          "documents": [
+            {
+              "documentId": 4,
+              "documentName": "agenda.pdf",
+              "relativePath": "/Uploads/agenda_uuid.pdf"
+            }
+          ]
+        },
+        "errors": null
+      }
+    }
+  }
+}
