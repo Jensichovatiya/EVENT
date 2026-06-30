@@ -1,0 +1,65 @@
+CREATE   PROCEDURE USP_GetEvents
+    @EventId INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @EventId IS NOT NULL
+    BEGIN
+        SELECT 
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
+            E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
+            E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
+            E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
+            E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
+        FROM Tracket_Master_Event E
+        INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
+        WHERE E.EventId = @EventId AND E.IsDeleted = 0;
+
+        SELECT SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
+        FROM Tracket_Master_Event_Slot 
+        WHERE EventId = @EventId AND IsDeleted = 0;
+
+        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath, IsPrimary, DisplayOrder, ThumbnailPath
+        FROM Tracket_Master_Event_Document 
+        WHERE EventId = @EventId AND IsDeleted = 0;
+    END
+    ELSE
+    BEGIN
+        SELECT 
+            E.EventId, E.EventRId, E.EventName, E.EventCode, E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventSubCategoryId, E.ThumbnailImage, E.BannerImage, E.About, E.About AS Description,
+            E.TermsAndConditions, E.FacebookLink, E.WebsiteLink, E.YoutubeLink, E.InstagramLink, 
+            E.TwitterLink, E.LinkedInLink, E.PintrestLink, E.ListingType, E.IsBookingAccept, 
+            E.BookingType, E.Currency, E.EventType, E.IsPublishActive, E.IsPassBookingActive, 
+            E.Status, E.ApprovalStatus, E.Capacity, E.TicketPrice, E.IsCancelled, E.CancelReason, 
+            E.RejectionReason, E.UserId AS OrganizerId, E.UserId, E.ShortDescription, E.Slug, E.SeoTitle, E.SeoDescription,
+            E.SeoKeywords, E.Tags, E.StartDate, E.EndDate, E.IsFree, E.IsPublic, E.MetaJson,
+            L.LocationId, L.VenueName, L.AddressLine1, L.AddressLine2, L.AreaName, L.Landmark, L.Pincode, L.GoogleMapLink, L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.VenueName AS LocationName, L.AddressLine1 AS Address, L.Latitude, L.Longitude,
+            L.CountryId, L.StateId, L.CityId, E.IsPublishActive AS IsActive,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom, E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom
+        FROM Tracket_Master_Event E
+        INNER JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
+        WHERE E.IsDeleted = 0;
+
+        SELECT EventId, SlotId, EventDate AS SlotDate, CONVERT(VARCHAR(8), StartTime, 108) AS StartTime, CONVERT(VARCHAR(8), EndTime, 108) AS EndTime, Capacity, SlotName, TicketPrice, GenderRestriction, AgeRestriction
+        FROM Tracket_Master_Event_Slot 
+        WHERE IsDeleted = 0;
+
+        SELECT EventId, DocumentId, FileName AS DocumentName, FilePath AS RelativePath, IsPrimary, DisplayOrder, ThumbnailPath
+        FROM Tracket_Master_Event_Document 
+        WHERE IsDeleted = 0;
+    END
+END;
+
+(1 rows affected)

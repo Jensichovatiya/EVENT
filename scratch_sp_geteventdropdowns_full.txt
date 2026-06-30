@@ -1,0 +1,202 @@
+CREATE PROCEDURE [dbo].[USP_GetEventDropdowns]
+    @EventId BIGINT = 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- ResultStatus
+    SELECT 200 AS ResultStatus, 'Dropdowns fetched successfully' AS ResultMessage;
+
+    -- Currencies Table (1)
+    SELECT CurrencyId AS Value, Code AS Code, Name AS Label, Symbol AS Symbol 
+    FROM Tracket_Master_Settings_Currencies 
+    WHERE IsDeleted = 0;
+
+    -- ListingTypes Table (2)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ListingType' AND V.IsActive = 1;
+
+    -- BookingTypes Table (3)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'BookingType' AND V.IsActive = 1;
+
+    -- EventTypes Table (4)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'EventType' AND V.IsActive = 1;
+
+    -- ZoneTypes Table (5)
+    SELECT V.Description AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ZoneType' AND V.IsActive = 1;
+
+    -- GateTypes Table (6)
+    SELECT V.Description AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'GateType' AND V.IsActive = 1;
+
+    -- EntryGates Table (7)
+    SELECT EntryGateId AS Value, GateName AS Label
+    FROM Tracket_Master_Event_Entry_Gate
+    WHERE EventId = @EventId AND IsDeleted = 0;
+
+    -- Timezones Table (8)
+    SELECT V.AdditionalField AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'Timezone' AND V.IsActive = 1;
+
+    -- VenueTypes Table (9)
+    SELECT V.AdditionalField AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'VenueType' AND V.IsActive = 1;
+
+    -- VenueCategories Table (10)
+    SELECT V.AdditionalField AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'VenueCategory' AND V.IsActive = 1;
+
+    -- Employee Count Table (11)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'EMPLOYEE_COUNT' AND V.IsActive = 1;
+
+    -- Industry Table (12)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'INDUSTRY' AND V.IsActive = 1;
+
+    -- Business Type Table (13)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'BUSINESS_TYPE' AND V.IsActive = 1;
+
+    -- Organizer Type Table (14)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ORGANIZER_TYPE' AND V.IsActive = 1;
+
+    -- Ticket Category Table (15)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'TICKET_CATEGORY' AND V.IsActive = 1;
+
+    -- Add-On Required Table (16)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ADDON_REQUIRED' AND V.IsActive = 1;
+
+    -- Calculation Type Table (17)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'CALCULATION_TYPE' AND V.IsActive = 1;
+
+    -- Charge To Table (18)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'CHARGE_TO' AND V.IsActive = 1;
+
+    -- Taxes Table (19)
+    SELECT 
+        TaxId AS Value,
+        TaxName + ' (' + CAST(CAST(TaxPercentage AS FLOAT) AS VARCHAR) + '%)' AS Label
+    FROM Tracket_Master_Tax
+    WHERE IsActive = 1 AND IsDeleted = 0;
+
+    -- PassIncludes Table (20)
+    SELECT V.ValueId AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'PASS_INCLUDE' AND V.IsActive = 1;
+
+    -- RepeatsConfig Table (21)
+    SELECT V.AdditionalField AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'REPEATS_CONFIG' AND V.IsActive = 1;
+
+    -- Event Zones Table (22) (Returns ZoneId as Value for mapping seats)
+    SELECT
+        ZoneId AS Value,
+        ZoneName AS Label
+    FROM Tracket_Master_Event_Zone
+ 
+      where IsDeleted = 0
+      AND IsActive = 1
+    ORDER BY SortOrder, ZoneName;
+
+    -- ArrangementTypes Table (23) - from general master
+    SELECT V.Description AS Value, V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ArrangementType' AND V.IsActive = 1;
+
+     -- Bookable As Table (24)
+    SELECT
+        V.ValueId AS Value,
+        V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C
+        ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'BOOKABLEAS'
+      AND V.IsActive = 1;
+
+    -- Accessibility Table (25)
+    SELECT
+        V.ValueId AS Value,
+        V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C
+        ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'ACCESSIBILITY'
+      AND V.IsActive = 1;
+
+    -- Shape Type Table (26)
+    SELECT
+        V.ValueId AS Value,
+        V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C
+        ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'SHAPETYPE'
+      AND V.IsActive = 1;
+
+    -- Currency Table (27)
+    SELECT
+        V.ValueId AS Value,
+        V.Description AS Label,
+        V.AdditionalField AS Symbol
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C
+        ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'CURRENCY'
+      AND V.IsActive = 1;
+
+    -- Label Position Table (28)
+    SELECT
+        V.ValueId AS Value,
+        V.Description AS Label
+    FROM Tracket_Master_GeneralMasterValue V
+    INNER JOIN Tracket_Master_GeneralMasterCategory C
+        ON V.CategoryId = C.CategoryId
+    WHERE C.DDL_ID = 'LABELPOSITION'
+      AND V.IsActive = 1;
+
+END;

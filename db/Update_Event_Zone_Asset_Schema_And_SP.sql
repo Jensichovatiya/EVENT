@@ -1,0 +1,1508 @@
+USE EVENT_Master;
+GO
+
+-- 1. Create Tracket_Master_Event_Zone_Asset table
+IF OBJECT_ID('dbo.Tracket_Master_Event_Zone_Asset', 'U') IS NULL
+BEGIN
+    CREATE TABLE dbo.Tracket_Master_Event_Zone_Asset (
+        ZoneAssetId BIGINT IDENTITY(1,1) PRIMARY KEY,
+        ZoneAssetRId UNIQUEIDENTIFIER DEFAULT NEWID(),
+        EventId BIGINT NOT NULL,
+        ZoneId BIGINT NOT NULL,
+        AssetId BIGINT NULL,
+        ArrangementTypeId BIGINT NOT NULL,
+        Quantity INT NOT NULL,
+        [RowCount] INT NULL,
+        [ColumnCount] INT NULL,
+        Remarks NVARCHAR(500) NULL,
+        IsActive BIT DEFAULT 1,
+        IsDeleted BIT DEFAULT 0,
+        CreatedBy BIGINT NULL,
+        CreatedDate DATETIME DEFAULT GETDATE(),
+        CreatedFrom NVARCHAR(100) NULL,
+        UpdatedBy BIGINT NULL,
+        UpdatedDate DATETIME NULL,
+        UpdatedFrom NVARCHAR(100) NULL,
+        ComponentId BIGINT NULL,
+        PositionX DECIMAL(18, 2) NULL,
+        PositionY DECIMAL(18, 2) NULL,
+        Width DECIMAL(18, 2) NULL,
+        Height DECIMAL(18, 2) NULL,
+        RotationAngle DECIMAL(18, 2) NULL,
+        ItemId NVARCHAR(100) NULL
+    );
+END
+GO
+
+IF COL_LENGTH('dbo.Tracket_Master_Event_Zone_Asset', 'AssetId') IS NOT NULL
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Asset ALTER COLUMN AssetId BIGINT NULL;
+END
+GO
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Tracket_Master_Event_Zone_Asset' AND COLUMN_NAME = 'CreatedBy' AND DATA_TYPE = 'bigint')
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Asset ALTER COLUMN CreatedBy NVARCHAR(200) NULL;
+END
+GO
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Tracket_Master_Event_Zone_Asset' AND COLUMN_NAME = 'UpdatedBy' AND DATA_TYPE = 'bigint')
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Asset ALTER COLUMN UpdatedBy NVARCHAR(200) NULL;
+END
+GO
+
+IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Tracket_Master_Event_Zone_Asset' AND COLUMN_NAME = 'ItemId')
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Asset ADD ItemId NVARCHAR(100) NULL;
+END
+GO
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Tracket_Master_Event_Zone_Seat' AND COLUMN_NAME = 'CreatedBy' AND DATA_TYPE = 'bigint')
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Seat ALTER COLUMN CreatedBy NVARCHAR(200) NULL;
+END
+GO
+
+IF EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = 'Tracket_Master_Event_Zone_Seat' AND COLUMN_NAME = 'UpdatedBy' AND DATA_TYPE = 'bigint')
+BEGIN
+    ALTER TABLE dbo.Tracket_Master_Event_Zone_Seat ALTER COLUMN UpdatedBy NVARCHAR(200) NULL;
+END
+GO
+
+-- 2. Drop USP_SaveEventZoneAsset_FromMeta helper SP (No longer used, logic inlined into USP_AddEditEvent_Full)
+IF OBJECT_ID('dbo.USP_SaveEventZoneAsset_FromMeta', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.USP_SaveEventZoneAsset_FromMeta;
+GO
+
+-- 3. Alter/Update USP_AddEditEvent_Full Stored Procedure
+IF OBJECT_ID('dbo.USP_AddEditEvent_Full', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.USP_AddEditEvent_Full;
+GO
+
+CREATE PROCEDURE [dbo].[USP_AddEditEvent_Full]
+    @JsonData NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+
+        -- ── Variables ────────────────────────────────────────────────────────
+        DECLARE 
+            @EventId              BIGINT,
+            @EventRId             NVARCHAR(100),
+            @EventName            NVARCHAR(300),
+            @EventCode            NVARCHAR(100),
+            @EventCategoryId      BIGINT,
+            @EventSubCategoryId   BIGINT,
+            @ThumbnailImage       NVARCHAR(500),
+            @BannerImage          NVARCHAR(500),
+            @About                NVARCHAR(MAX),
+            @TermsAndConditions   NVARCHAR(MAX),
+            @FacebookLink         NVARCHAR(500),
+            @WebsiteLink          NVARCHAR(500),
+            @YoutubeLink          NVARCHAR(500),
+            @InstagramLink        NVARCHAR(500),
+            @TwitterLink          NVARCHAR(500),
+            @LinkedInLink         NVARCHAR(500),
+            @PintrestLink         NVARCHAR(500),
+            @ListingType          INT,
+            @IsBookingAccept      BIT,
+            @BookingType          INT,
+            @Currency             NVARCHAR(10),
+            @EventType            INT,
+            @IsPublishActive      BIT,
+            @IsPassBookingActive  BIT,
+            @Status               INT,
+            @ApprovalStatus       INT,
+            @Capacity             INT,
+            @TicketPrice          DECIMAL(18,2),
+            @IsCancelled          BIT,
+            @CancelReason         NVARCHAR(MAX),
+            @RejectionReason      NVARCHAR(MAX),
+            @CreatedBy            NVARCHAR(200),
+            @CreatedFrom          NVARCHAR(100),
+            @UpdatedBy            NVARCHAR(200),
+            @UpdatedFrom          NVARCHAR(100),
+            @ShortDescription     NVARCHAR(500),
+            @UserId               BIGINT,
+            @Slug                 NVARCHAR(300),
+            @SeoTitle             NVARCHAR(300),
+            @SeoDescription       NVARCHAR(MAX),
+            @SeoKeywords          NVARCHAR(1000),
+            @Tags                 NVARCHAR(1000),
+            @StartDate            DATETIME,
+            @EndDate              DATETIME,
+            @IsFree               BIT,
+            @IsPublic             BIT,
+            @MetaJson             NVARCHAR(MAX),
+            -- Step-1 extras
+            @Tagline              NVARCHAR(300),
+            @Purpose              NVARCHAR(100),
+            @TargetAudience       NVARCHAR(300),
+            -- Location
+            @LocationId           BIGINT,
+            @LocationName         NVARCHAR(300),
+            @Address              NVARCHAR(MAX),
+            @VenueName            NVARCHAR(300),
+            @AddressLine1         NVARCHAR(500),
+            @AddressLine2         NVARCHAR(500),
+            @AreaName             NVARCHAR(300),
+            @Landmark             NVARCHAR(300),
+            @Pincode              NVARCHAR(20),
+            @Latitude             DECIMAL(18,10),
+            @Longitude            DECIMAL(18,10),
+            @GoogleMapLink        NVARCHAR(MAX),
+            @HallName             NVARCHAR(200),
+            @GroundName           NVARCHAR(200),
+            @ParkingAvailable     BIT,
+            @ParkingDetails       NVARCHAR(MAX),
+            @CountryId            NVARCHAR(100),
+            @StateId              NVARCHAR(100),
+            @CityId               NVARCHAR(100),
+            -- Step-2 Date & Time (→ Tracket_Master_Event_Slot only)
+            @DateTimeMode         NVARCHAR(20),
+            @Timezone             NVARCHAR(100),
+            @DurationDays         INT,
+            @DurationHours        INT,
+            @DurationMinutes      INT,
+            @AllDay               BIT,
+            @ShowCountdown        BIT,
+            @VisibilityStartDate  NVARCHAR(40),
+            @VisibilityStartTime  NVARCHAR(10),
+            @SetupStartTime       NVARCHAR(10),
+            @TeardownEndTime      NVARCHAR(10),
+            @RecurrenceFrequency  NVARCHAR(20),
+            @RecurrenceInterval   INT,
+            @RecurrenceEndDate    NVARCHAR(40),
+            -- Step-3 Venue extra fields
+            @VenueType            NVARCHAR(100),
+            @VenueCategory        NVARCHAR(100),
+            @Facilities           NVARCHAR(MAX),
+            @VenueCapacity        INT,
+            @ContactPerson        NVARCHAR(200),
+            @ContactDesignation   NVARCHAR(200),
+            @ContactPhoneCode     NVARCHAR(10),
+            @ContactPhone         NVARCHAR(50),
+            @ContactEmail         NVARCHAR(200),
+            @Notes                NVARCHAR(500),
+            @OtherFacility        NVARCHAR(200),
+            -- Step-4 Zone-Asset variables
+            @ZoneId               BIGINT,
+            @AssetId              BIGINT,
+            @ArrangementType      NVARCHAR(100),
+            @ArrangementTypeId    BIGINT,
+            @Quantity             INT,
+            @RowCount             INT,
+            @ColumnCount          INT,
+            -- Step-5 Organizer variables
+            @OrganizerTypeId              BIGINT,
+            @OrganizationName             NVARCHAR(300),
+            @GSTIN                        NVARCHAR(50),
+            @PANNumber                    NVARCHAR(50),
+            @OrgWebsite                   NVARCHAR(500),
+            @OrgPrimaryEmail              NVARCHAR(200),
+            @OrgPrimaryPhone              NVARCHAR(50),
+            @OrgAlternatePhone            NVARCHAR(50),
+            @OrgAddress                   NVARCHAR(MAX),
+            @OrgCity                      NVARCHAR(100),
+            @OrgState                     NVARCHAR(100),
+            @OrgCountry                   NVARCHAR(100),
+            @OrgPinCode                   NVARCHAR(20),
+            @PrimaryContactName           NVARCHAR(200),
+            @PrimaryContactDesignation    NVARCHAR(200),
+            @PrimaryContactEmail          NVARCHAR(200),
+            @PrimaryContactPhone          NVARCHAR(50),
+            @EmergencyContactName         NVARCHAR(200),
+            @EmergencyContactRelationship NVARCHAR(200),
+            @EmergencyContactPhone        NVARCHAR(50),
+            @EmergencyAlternatePhone      NVARCHAR(50),
+            @YearEstablished              INT,
+            @EmployeeCountId              BIGINT,
+            @IndustryId                   BIGINT,
+            @BusinessTypeId               BIGINT,
+            @RegistrationNumber           NVARCHAR(100),
+            @RegisteredAddress            NVARCHAR(MAX),
+            @OrgFacebookLink              NVARCHAR(500),
+            @OrgInstagramLink             NVARCHAR(500),
+            @OrgLinkedInLink              NVARCHAR(500),
+            @OrgTwitterLink               NVARCHAR(500),
+            @OrgYouTubeLink               NVARCHAR(500),
+            @OrganizationLogo             NVARCHAR(500),
+            @GSTCertificate               NVARCHAR(500),
+            @PANCardDocument              NVARCHAR(500),
+            @RegistrationCertificate      NVARCHAR(500),
+            @OtherDocument                NVARCHAR(500);
+
+        -- ── Parse JSON (PascalCase keys = C# JsonConvert output) ─────────────
+        SELECT 
+            @EventId             = EventId,
+            @EventRId            = EventRId,
+            @EventName           = EventName,
+            @EventCode           = EventCode,
+            @EventCategoryId     = CategoryId,
+            @EventSubCategoryId  = EventSubCategoryId,
+            @ThumbnailImage      = ThumbnailImage,
+            @BannerImage         = BannerImage,
+            @About               = About,
+            @TermsAndConditions  = TermsAndConditions,
+            @FacebookLink        = FacebookLink,
+            @WebsiteLink         = WebsiteLink,
+            @YoutubeLink         = YoutubeLink,
+            @InstagramLink       = InstagramLink,
+            @TwitterLink         = TwitterLink,
+            @LinkedInLink        = LinkedInLink,
+            @PintrestLink        = PintrestLink,
+            @ListingType         = ListingType,
+            @IsBookingAccept     = IsBookingAccept,
+            @BookingType         = BookingType,
+            @Currency            = Currency,
+            @EventType           = EventType,
+            @IsPublishActive     = IsPublishActive,
+            @IsPassBookingActive = IsPassBookingActive,
+            @Status              = Status,
+            @ApprovalStatus      = ApprovalStatus,
+            @Capacity            = Capacity,
+            @TicketPrice         = TicketPrice,
+            @IsCancelled         = IsCancelled,
+            @CancelReason        = CancelReason,
+            @RejectionReason     = RejectionReason,
+            @CreatedBy           = CreatedBy,
+            @CreatedFrom         = CreatedFrom,
+            @UpdatedBy           = UpdatedBy,
+            @UpdatedFrom         = UpdatedFrom,
+            @ShortDescription    = ShortDescription,
+            @UserId              = UserId,
+            @Slug                = Slug,
+            @SeoTitle            = SeoTitle,
+            @SeoDescription      = SeoDescription,
+            @SeoKeywords         = SeoKeywords,
+            @Tags                = Tags,
+            @StartDate           = StartDate,
+            @EndDate             = EndDate,
+            @IsFree              = IsFree,
+            @IsPublic            = IsPublic,
+            @MetaJson            = MetaJson,
+            @Tagline             = Tagline,
+            @Purpose             = Purpose,
+            @TargetAudience      = TargetAudience,
+            @LocationId          = LocationId,
+            @LocationName        = LocationName,
+            @Address             = Address,
+            @VenueName           = VenueName,
+            @AddressLine1        = AddressLine1,
+            @AddressLine2        = AddressLine2,
+            @AreaName            = AreaName,
+            @Landmark            = Landmark,
+            @Pincode             = Pincode,
+            @Latitude            = Latitude,
+            @Longitude           = Longitude,
+            @GoogleMapLink       = GoogleMapLink,
+            @HallName            = HallName,
+            @GroundName          = GroundName,
+            @ParkingAvailable    = ParkingAvailable,
+            @ParkingDetails      = ParkingDetails,
+            @CountryId           = CountryId,
+            @StateId             = StateId,
+            @CityId              = CityId,
+            @DateTimeMode        = DateTimeMode,
+            @Timezone            = Timezone,
+            @DurationDays        = DurationDays,
+            @DurationHours       = DurationHours,
+            @DurationMinutes     = DurationMinutes,
+            @AllDay              = AllDay,
+            @ShowCountdown       = ShowCountdown,
+            @VisibilityStartDate = VisibilityStartDate,
+            @VisibilityStartTime = VisibilityStartTime,
+            @SetupStartTime      = SetupStartTime,
+            @TeardownEndTime     = TeardownEndTime,
+            @RecurrenceFrequency = RecurrenceFrequency,
+            @RecurrenceInterval  = RecurrenceInterval,
+            @RecurrenceEndDate   = RecurrenceEndDate,
+            @VenueType           = VenueType,
+            @VenueCategory       = VenueCategory,
+            @Facilities          = Facilities,
+            @VenueCapacity       = VenueCapacity,
+            @ContactPerson       = ContactPerson,
+            @ContactDesignation  = ContactDesignation,
+            @ContactPhoneCode    = ContactPhoneCode,
+            @ContactPhone        = ContactPhone,
+            @ContactEmail        = ContactEmail,
+            @Notes               = Notes,
+            @OtherFacility       = OtherFacility,
+            -- Step-5 Organizer mappings
+            @OrganizerTypeId              = OrganizerTypeId,
+            @OrganizationName             = OrganizationName,
+            @GSTIN                        = GSTIN,
+            @PANNumber                    = PANNumber,
+            @OrgWebsite                   = OrgWebsite,
+            @OrgPrimaryEmail              = OrgPrimaryEmail,
+            @OrgPrimaryPhone              = OrgPrimaryPhone,
+            @OrgAlternatePhone            = OrgAlternatePhone,
+            @OrgAddress                   = OrgAddress,
+            @OrgCity                      = OrgCity,
+            @OrgState                     = OrgState,
+            @OrgCountry                   = OrgCountry,
+            @OrgPinCode                   = OrgPinCode,
+            @PrimaryContactName           = PrimaryContactName,
+            @PrimaryContactDesignation    = PrimaryContactDesignation,
+            @PrimaryContactEmail          = PrimaryContactEmail,
+            @PrimaryContactPhone          = PrimaryContactPhone,
+            @EmergencyContactName         = EmergencyContactName,
+            @EmergencyContactRelationship = EmergencyContactRelationship,
+            @EmergencyContactPhone        = EmergencyContactPhone,
+            @EmergencyAlternatePhone      = EmergencyAlternatePhone,
+            @YearEstablished              = YearEstablished,
+            @EmployeeCountId              = EmployeeCountId,
+            @IndustryId                   = IndustryId,
+            @BusinessTypeId               = BusinessTypeId,
+            @RegistrationNumber           = RegistrationNumber,
+            @RegisteredAddress            = RegisteredAddress,
+            @OrgFacebookLink              = OrgFacebookLink,
+            @OrgInstagramLink             = OrgInstagramLink,
+            @OrgLinkedInLink              = OrgLinkedInLink,
+            @OrgTwitterLink               = OrgTwitterLink,
+            @OrgYouTubeLink               = OrgYouTubeLink,
+            @OrganizationLogo             = OrganizationLogo,
+            @GSTCertificate               = GSTCertificate,
+            @PANCardDocument              = PANCardDocument,
+            @RegistrationCertificate      = RegistrationCertificate,
+            @OtherDocument                = OtherDocument
+        FROM OPENJSON(@JsonData)
+        WITH (
+            EventId              BIGINT           '$.EventId',
+            EventRId             NVARCHAR(100)    '$.EventRId',
+            EventName            NVARCHAR(300)    '$.EventName',
+            EventCode            NVARCHAR(100)    '$.EventCode',
+            CategoryId           BIGINT           '$.CategoryId',
+            EventSubCategoryId   BIGINT           '$.EventSubCategoryId',
+            ThumbnailImage       NVARCHAR(500)    '$.ThumbnailImage',
+            BannerImage          NVARCHAR(500)    '$.BannerImage',
+            About                NVARCHAR(MAX)    '$.About',
+            TermsAndConditions   NVARCHAR(MAX)    '$.TermsAndConditions',
+            FacebookLink         NVARCHAR(500)    '$.FacebookLink',
+            WebsiteLink          NVARCHAR(500)    '$.WebsiteLink',
+            YoutubeLink          NVARCHAR(500)    '$.YoutubeLink',
+            InstagramLink        NVARCHAR(500)    '$.InstagramLink',
+            TwitterLink          NVARCHAR(500)    '$.TwitterLink',
+            LinkedInLink         NVARCHAR(500)    '$.LinkedInLink',
+            PintrestLink         NVARCHAR(500)    '$.PintrestLink',
+            ListingType          INT              '$.ListingType',
+            IsBookingAccept      BIT              '$.IsBookingAccept',
+            BookingType          INT              '$.BookingType',
+            Currency             NVARCHAR(10)     '$.Currency',
+            EventType            INT              '$.EventType',
+            IsPublishActive      BIT              '$.IsPublishActive',
+            IsPassBookingActive  BIT              '$.IsPassBookingActive',
+            Status               INT              '$.Status',
+            ApprovalStatus       INT              '$.ApprovalStatus',
+            Capacity             INT              '$.Capacity',
+            TicketPrice          DECIMAL(18,2)    '$.TicketPrice',
+            IsCancelled          BIT              '$.IsCancelled',
+            CancelReason         NVARCHAR(MAX)    '$.CancelReason',
+            RejectionReason      NVARCHAR(MAX)    '$.RejectionReason',
+            CreatedBy            NVARCHAR(200)    '$.CreatedBy',
+            CreatedFrom          NVARCHAR(100)    '$.CreatedFrom',
+            UpdatedBy            NVARCHAR(200)    '$.UpdatedBy',
+            UpdatedFrom          NVARCHAR(100)    '$.UpdatedFrom',
+            ShortDescription     NVARCHAR(500)    '$.ShortDescription',
+            UserId               BIGINT           '$.UserId',
+            Slug                 NVARCHAR(300)    '$.Slug',
+            SeoTitle             NVARCHAR(300)    '$.SeoTitle',
+            SeoDescription       NVARCHAR(MAX)    '$.SeoDescription',
+            SeoKeywords          NVARCHAR(1000)   '$.SeoKeywords',
+            Tags                 NVARCHAR(1000)   '$.Tags',
+            StartDate            DATETIME         '$.StartDate',
+            EndDate              DATETIME         '$.EndDate',
+            IsFree               BIT              '$.IsFree',
+            IsPublic             BIT              '$.IsPublic',
+            MetaJson             NVARCHAR(MAX)    '$.MetaJson',
+            Tagline              NVARCHAR(300)    '$.Tagline',
+            Purpose              NVARCHAR(100)    '$.Purpose',
+            TargetAudience       NVARCHAR(300)    '$.TargetAudience',
+            LocationId           BIGINT           '$.LocationId',
+            LocationName         NVARCHAR(300)    '$.LocationName',
+            Address              NVARCHAR(MAX)    '$.Address',
+            VenueName            NVARCHAR(300)    '$.VenueName',
+            AddressLine1         NVARCHAR(500)    '$.AddressLine1',
+            AddressLine2         NVARCHAR(500)    '$.AddressLine2',
+            AreaName             NVARCHAR(300)    '$.AreaName',
+            Landmark             NVARCHAR(300)    '$.Landmark',
+            Pincode              NVARCHAR(20)     '$.Pincode',
+            Latitude             DECIMAL(18,10)   '$.Latitude',
+            Longitude            DECIMAL(18,10)   '$.Longitude',
+            GoogleMapLink        NVARCHAR(MAX)    '$.GoogleMapLink',
+            HallName             NVARCHAR(200)    '$.HallName',
+            GroundName           NVARCHAR(200)    '$.GroundName',
+            ParkingAvailable     BIT              '$.ParkingAvailable',
+            ParkingDetails       NVARCHAR(MAX)    '$.ParkingDetails',
+            CountryId            NVARCHAR(100)    '$.CountryId',
+            StateId              NVARCHAR(100)    '$.StateId',
+            CityId               NVARCHAR(100)    '$.CityId',
+            DateTimeMode         NVARCHAR(20)     '$.DateTimeMode',
+            Timezone             NVARCHAR(100)    '$.Timezone',
+            DurationDays         INT              '$.DurationDays',
+            DurationHours        INT              '$.DurationHours',
+            DurationMinutes      INT              '$.DurationMinutes',
+            AllDay               BIT              '$.AllDay',
+            ShowCountdown        BIT              '$.ShowCountdown',
+            VisibilityStartDate  NVARCHAR(40)     '$.VisibilityStartDate',
+            VisibilityStartTime  NVARCHAR(10)     '$.VisibilityStartTime',
+            SetupStartTime       NVARCHAR(10)     '$.SetupStartTime',
+            TeardownEndTime      NVARCHAR(10)     '$.TeardownEndTime',
+            RecurrenceFrequency  NVARCHAR(20)     '$.RecurrenceFrequency',
+            RecurrenceInterval   INT              '$.RecurrenceInterval',
+            RecurrenceEndDate    NVARCHAR(40)     '$.RecurrenceEndDate',
+            VenueType            NVARCHAR(100)    '$.VenueType',
+            VenueCategory        NVARCHAR(100)    '$.VenueCategory',
+            Facilities           NVARCHAR(MAX)    '$.Facilities',
+            VenueCapacity        INT              '$.VenueCapacity',
+            ContactPerson        NVARCHAR(200)    '$.ContactPerson',
+            ContactDesignation   NVARCHAR(200)    '$.ContactDesignation',
+            ContactPhoneCode     NVARCHAR(10)     '$.ContactPhoneCode',
+            ContactPhone         NVARCHAR(50)     '$.ContactPhone',
+            ContactEmail         NVARCHAR(200)    '$.ContactEmail',
+            Notes                NVARCHAR(500)    '$.Notes',
+            OtherFacility        NVARCHAR(200)    '$.OtherFacility',
+            -- Step-5 Organizer schema fields
+            OrganizerTypeId              BIGINT           '$.OrganizerTypeId',
+            OrganizationName             NVARCHAR(300)    '$.OrganizationName',
+            GSTIN                        NVARCHAR(50)     '$.GSTIN',
+            PANNumber                    NVARCHAR(50)     '$.PANNumber',
+            OrgWebsite                   NVARCHAR(500)    '$.OrgWebsite',
+            OrgPrimaryEmail              NVARCHAR(200)    '$.OrgPrimaryEmail',
+            OrgPrimaryPhone              NVARCHAR(50)     '$.OrgPrimaryPhone',
+            OrgAlternatePhone            NVARCHAR(50)     '$.OrgAlternatePhone',
+            OrgAddress                   NVARCHAR(MAX)    '$.OrgAddress',
+            OrgCity                      NVARCHAR(100)    '$.OrgCity',
+            OrgState                     NVARCHAR(100)    '$.OrgState',
+            OrgCountry                   NVARCHAR(100)    '$.OrgCountry',
+            OrgPinCode                   NVARCHAR(20)     '$.OrgPinCode',
+            PrimaryContactName           NVARCHAR(200)    '$.PrimaryContactName',
+            PrimaryContactDesignation    NVARCHAR(200)    '$.PrimaryContactDesignation',
+            PrimaryContactEmail          NVARCHAR(200)    '$.PrimaryContactEmail',
+            PrimaryContactPhone          NVARCHAR(50)     '$.PrimaryContactPhone',
+            EmergencyContactName         NVARCHAR(200)    '$.EmergencyContactName',
+            EmergencyContactRelationship NVARCHAR(200)    '$.EmergencyContactRelationship',
+            EmergencyContactPhone        NVARCHAR(50)     '$.EmergencyContactPhone',
+            EmergencyAlternatePhone      NVARCHAR(50)     '$.EmergencyAlternatePhone',
+            YearEstablished              INT              '$.YearEstablished',
+            EmployeeCountId              BIGINT           '$.EmployeeCountId',
+            IndustryId                   BIGINT           '$.IndustryId',
+            BusinessTypeId               BIGINT           '$.BusinessTypeId',
+            RegistrationNumber           NVARCHAR(100)    '$.RegistrationNumber',
+            RegisteredAddress            NVARCHAR(MAX)    '$.RegisteredAddress',
+            OrgFacebookLink              NVARCHAR(500)    '$.OrgFacebookLink',
+            OrgInstagramLink             NVARCHAR(500)    '$.OrgInstagramLink',
+            OrgLinkedInLink              NVARCHAR(500)    '$.OrgLinkedInLink',
+            OrgTwitterLink               NVARCHAR(500)    '$.OrgTwitterLink',
+            OrgYouTubeLink               NVARCHAR(500)    '$.OrgYouTubeLink',
+            OrganizationLogo             NVARCHAR(500)    '$.OrganizationLogo',
+            GSTCertificate               NVARCHAR(500)    '$.GSTCertificate',
+            PANCardDocument              NVARCHAR(500)    '$.PANCardDocument',
+            RegistrationCertificate      NVARCHAR(500)    '$.RegistrationCertificate',
+            OtherDocument                NVARCHAR(500)    '$.OtherDocument'
+        );
+
+        -- ── Fallbacks ─────────────────────────────────────────────────────────
+        IF @About IS NULL OR @About = ''
+            SELECT @About = Description FROM OPENJSON(@JsonData) WITH (Description NVARCHAR(MAX) '$.Description');
+        IF @VenueName IS NULL OR @VenueName = '' SET @VenueName = @LocationName;
+        IF @AddressLine1 IS NULL OR @AddressLine1 = '' SET @AddressLine1 = @Address;
+
+        -- MetaJson Step-1 fallbacks
+        IF @MetaJson IS NOT NULL AND ISJSON(@MetaJson) = 1
+        BEGIN
+            SET @Tagline        = ISNULL(NULLIF(@Tagline,''),       JSON_VALUE(@MetaJson, '$.basic.tagline'));
+            SET @Purpose        = ISNULL(NULLIF(@Purpose,''),       JSON_VALUE(@MetaJson, '$.basic.purpose'));
+            SET @TargetAudience = ISNULL(NULLIF(@TargetAudience,''),JSON_VALUE(@MetaJson, '$.basic.targetAudience'));
+        END
+
+        -- MetaJson Step-2 fallbacks (if direct fields missing)
+        IF (@DateTimeMode IS NULL OR @DateTimeMode = '') AND @MetaJson IS NOT NULL AND ISJSON(@MetaJson) = 1
+        BEGIN
+            SET @DateTimeMode        = JSON_VALUE(@MetaJson, '$.datetime.mode');
+            SET @Timezone            = ISNULL(@Timezone,           JSON_VALUE(@MetaJson, '$.datetime.timezone'));
+            SET @DurationDays        = ISNULL(@DurationDays,       TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.durationDays') AS INT));
+            SET @DurationHours       = ISNULL(@DurationHours,      TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.durationHours') AS INT));
+            SET @DurationMinutes     = ISNULL(@DurationMinutes,    TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.durationMinutes') AS INT));
+            SET @AllDay              = ISNULL(@AllDay,             TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.allDay') AS BIT));
+            SET @ShowCountdown       = ISNULL(@ShowCountdown,      TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.showCountdown') AS BIT));
+            SET @VisibilityStartDate = ISNULL(@VisibilityStartDate,JSON_VALUE(@MetaJson, '$.datetime.visibilityStartDate'));
+            SET @VisibilityStartTime = ISNULL(@VisibilityStartTime,JSON_VALUE(@MetaJson, '$.datetime.visibilityStartTime'));
+            SET @SetupStartTime      = ISNULL(@SetupStartTime,     JSON_VALUE(@MetaJson, '$.datetime.setupStartTime'));
+            SET @TeardownEndTime     = ISNULL(@TeardownEndTime,    JSON_VALUE(@MetaJson, '$.datetime.teardownEndTime'));
+            SET @RecurrenceFrequency = ISNULL(@RecurrenceFrequency,JSON_VALUE(@MetaJson, '$.datetime.recurrenceFrequency'));
+            SET @RecurrenceInterval  = ISNULL(@RecurrenceInterval, TRY_CAST(JSON_VALUE(@MetaJson, '$.datetime.recurrenceInterval') AS INT));
+            SET @RecurrenceEndDate   = ISNULL(@RecurrenceEndDate,  JSON_VALUE(@MetaJson, '$.datetime.recurrenceEndDate'));
+        END
+
+        -- Resolve UserId
+        IF @UserId IS NULL OR @UserId = 0
+        BEGIN
+            SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE EmailId = @CreatedBy AND IsDeleted = 0;
+            IF @UserId IS NULL OR @UserId = 0
+                SELECT TOP 1 @UserId = UserId FROM Tracket_Master_User WHERE Name = @CreatedBy AND IsDeleted = 0;
+        END
+        IF @EventRId IS NULL OR @EventRId = ''
+            SET @EventRId = 'EVT-' + UPPER(SUBSTRING(CONVERT(NVARCHAR(36), NEWID()), 1, 12));
+        SET @DateTimeMode       = ISNULL(NULLIF(@DateTimeMode,''), 'single');
+        SET @RecurrenceInterval = ISNULL(@RecurrenceInterval, 1);
+
+        -- Derive HH:mm time strings for slots
+        DECLARE @StartTimeStr NVARCHAR(10) = '';
+        DECLARE @EndTimeStr   NVARCHAR(10) = '';
+        IF @MetaJson IS NOT NULL AND ISJSON(@MetaJson) = 1
+        BEGIN
+            SET @StartTimeStr = ISNULL(JSON_VALUE(@MetaJson, '$.datetime.startTime'), '');
+            SET @EndTimeStr   = ISNULL(JSON_VALUE(@MetaJson, '$.datetime.endTime'),   '');
+        END
+        IF @StartTimeStr = '' AND @StartDate IS NOT NULL
+            SET @StartTimeStr = CONVERT(NVARCHAR(5), CAST(@StartDate AS TIME), 108);
+        IF @EndTimeStr = '' AND @EndDate IS NOT NULL
+            SET @EndTimeStr = CONVERT(NVARCHAR(5), CAST(@EndDate AS TIME), 108);
+
+        DECLARE @ActorBy   NVARCHAR(200) = ISNULL(NULLIF(@UpdatedBy,''), @CreatedBy);
+        DECLARE @ActorFrom NVARCHAR(100) = ISNULL(NULLIF(@UpdatedFrom,''), @CreatedFrom);
+
+        -- ================================================================
+        -- INSERT or UPDATE Tracket_Master_Event (header only)
+        -- ================================================================
+        IF @EventId IS NULL OR @EventId = 0
+        BEGIN
+            INSERT INTO Tracket_Master_Event (
+                EventRId, EventName, EventCode, EventCategoryId, EventSubCategoryId,
+                ThumbnailImage, BannerImage, About, TermsAndConditions,
+                FacebookLink, WebsiteLink, YoutubeLink, InstagramLink,
+                TwitterLink, LinkedInLink, PintrestLink,
+                ListingType, IsBookingAccept, BookingType,
+                Currency, EventType, IsPublishActive, IsPassBookingActive,
+                Status, ApprovalStatus, Capacity, TicketPrice,
+                IsCancelled, CancelReason, RejectionReason, UserId,
+                ShortDescription, Slug, SeoTitle, SeoDescription, SeoKeywords, Tags,
+                IsFree, IsPublic, MetaJson, IsDeleted,
+                CreatedBy, CreatedDate, CreatedFrom,
+                Tagline, Purpose, TargetAudience
+            )
+            VALUES (
+                @EventRId, @EventName, @EventCode, @EventCategoryId, @EventSubCategoryId,
+                @ThumbnailImage, @BannerImage, @About, @TermsAndConditions,
+                @FacebookLink, @WebsiteLink, @YoutubeLink, @InstagramLink,
+                @TwitterLink, @LinkedInLink, @PintrestLink,
+                @ListingType, ISNULL(@IsBookingAccept,1), @BookingType,
+                ISNULL(@Currency,'INR'), @EventType, ISNULL(@IsPublishActive,0), ISNULL(@IsPassBookingActive,1),
+                ISNULL(@Status,0), ISNULL(@ApprovalStatus,0), @Capacity, @TicketPrice,
+                ISNULL(@IsCancelled,0), @CancelReason, @RejectionReason, @UserId,
+                @ShortDescription, @Slug, @SeoTitle, @SeoDescription, @SeoKeywords, @Tags,
+                ISNULL(@IsFree,0), ISNULL(@IsPublic,1), @MetaJson, 0,
+                @ActorBy, GETDATE(), @ActorFrom,
+                @Tagline, @Purpose, @TargetAudience
+            );
+            SET @EventId = SCOPE_IDENTITY();
+
+            INSERT INTO Tracket_Master_Event_Location (
+                EventId, VenueName, AddressLine1, AddressLine2, AreaName, Landmark, Pincode,
+                Latitude, Longitude, GoogleMapLink, HallName, GroundName,
+                ParkingAvailable, ParkingDetails, CountryId, StateId, CityId,
+                VenueType, VenueCategory, Facilities,
+                Capacity, ContactPerson, ContactDesignation, ContactPhoneCode, ContactPhone, ContactEmail, Notes, OtherFacility,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            VALUES (
+                @EventId, @VenueName, @AddressLine1, @AddressLine2, @AreaName, @Landmark, @Pincode,
+                @Latitude, @Longitude, @GoogleMapLink, @HallName, @GroundName,
+                ISNULL(@ParkingAvailable,0), @ParkingDetails, @CountryId, @StateId, @CityId,
+                @VenueType, @VenueCategory, @Facilities,
+                @VenueCapacity, @ContactPerson, @ContactDesignation, @ContactPhoneCode, @ContactPhone, @ContactEmail, @Notes, @OtherFacility,
+                0, @ActorBy, GETDATE(), @ActorFrom
+            );
+
+            INSERT INTO Tracket_Master_Event_Document (
+                EventId, FileName, FilePath, IsPrimary, DisplayOrder, ThumbnailPath,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT @EventId, DocumentName, RelativePath,
+                   ISNULL(IsPrimary,0), ISNULL(DisplayOrder,0), ThumbnailPath,
+                   0, @ActorBy, GETDATE(), @ActorFrom
+            FROM OPENJSON(@JsonData, '$.Documents')
+            WITH (
+                DocumentName  NVARCHAR(500) '$.DocumentName',
+                RelativePath  NVARCHAR(MAX) '$.RelativePath',
+                IsPrimary     BIT           '$.IsPrimary',
+                DisplayOrder  INT           '$.DisplayOrder',
+                ThumbnailPath NVARCHAR(500) '$.ThumbnailPath'
+            );
+
+            -- Insert Organizer
+            INSERT INTO Tracket_Master_Event_Organizer (
+                UserId, EventId, OrganizerTypeId, OrganizationName, GSTIN, PANNumber, Website,
+                PrimaryEmail, PrimaryPhone, AlternatePhone, Address, City, State, Country, PinCode,
+                PrimaryContactName, PrimaryContactDesignation, PrimaryContactEmail, PrimaryContactPhone,
+                EmergencyContactName, EmergencyContactRelationship, EmergencyContactPhone, EmergencyAlternatePhone,
+                YearEstablished, EmployeeCountId, IndustryId, BusinessTypeId, RegistrationNumber, RegisteredAddress,
+                FacebookLink, InstagramLink, LinkedInLink, TwitterLink, YouTubeLink,
+                OrganizationLogo, GSTCertificate, PANCardDocument, RegistrationCertificate, OtherDocument,
+                IsActive, IsDeleted, CreatedBy, CreatedDate, CreatedFrom, PublicId
+            )
+            VALUES (
+                @UserId, @EventId, @OrganizerTypeId, @OrganizationName, @GSTIN, @PANNumber, @OrgWebsite,
+                @OrgPrimaryEmail, @OrgPrimaryPhone, @OrgAlternatePhone, @OrgAddress, @OrgCity, @OrgState, @OrgCountry, @OrgPinCode,
+                @PrimaryContactName, @PrimaryContactDesignation, @PrimaryContactEmail, @PrimaryContactPhone,
+                @EmergencyContactName, @EmergencyContactRelationship, @EmergencyContactPhone, @EmergencyAlternatePhone,
+                @YearEstablished, @EmployeeCountId, @IndustryId, @BusinessTypeId, @RegistrationNumber, @RegisteredAddress,
+                @OrgFacebookLink, @OrgInstagramLink, @OrgLinkedInLink, @OrgTwitterLink, @OrgYouTubeLink,
+                @OrganizationLogo, @GSTCertificate, @PANCardDocument, @RegistrationCertificate, @OtherDocument,
+                1, 0, @ActorBy, GETDATE(), @ActorFrom, NEWID()
+            );
+
+        END
+        ELSE
+        BEGIN
+            UPDATE Tracket_Master_Event SET
+                EventRId            = ISNULL(NULLIF(@EventRId,''), EventRId),
+                EventName           = @EventName,
+                EventCode           = @EventCode,
+                EventCategoryId     = @EventCategoryId,
+                EventSubCategoryId  = @EventSubCategoryId,
+                ThumbnailImage      = @ThumbnailImage,
+                BannerImage         = @BannerImage,
+                About               = @About,
+                TermsAndConditions  = @TermsAndConditions,
+                FacebookLink        = @FacebookLink,
+                WebsiteLink         = @WebsiteLink,
+                YoutubeLink         = @YoutubeLink,
+                InstagramLink       = @InstagramLink,
+                TwitterLink         = @TwitterLink,
+                LinkedInLink        = @LinkedInLink,
+                PintrestLink        = @PintrestLink,
+                ListingType         = @ListingType,
+                IsBookingAccept     = ISNULL(@IsBookingAccept, IsBookingAccept),
+                BookingType         = @BookingType,
+                Currency            = ISNULL(@Currency, Currency),
+                EventType           = @EventType,
+                IsPublishActive     = ISNULL(@IsPublishActive, IsPublishActive),
+                IsPassBookingActive = ISNULL(@IsPassBookingActive, IsPassBookingActive),
+                Status              = ISNULL(@Status, Status),
+                ApprovalStatus      = ISNULL(@ApprovalStatus, ApprovalStatus),
+                Capacity            = @Capacity,
+                TicketPrice         = @TicketPrice,
+                IsCancelled         = ISNULL(@IsCancelled, IsCancelled),
+                CancelReason        = @CancelReason,
+                UserId              = @UserId,
+                ShortDescription    = @ShortDescription,
+                Slug                = @Slug,
+                SeoTitle            = @SeoTitle,
+                SeoDescription      = @SeoDescription,
+                SeoKeywords         = @SeoKeywords,
+                Tags                = @Tags,
+                IsFree              = ISNULL(@IsFree, IsFree),
+                IsPublic            = ISNULL(@IsPublic, IsPublic),
+                MetaJson            = @MetaJson,
+                UpdatedBy           = @ActorBy,
+                UpdatedDate         = GETDATE(),
+                UpdatedFrom         = @ActorFrom,
+                Tagline             = @Tagline,
+                Purpose             = @Purpose,
+                TargetAudience      = @TargetAudience
+            WHERE EventId = @EventId;
+
+            UPDATE Tracket_Master_Event_Location SET
+                VenueName        = @VenueName, AddressLine1 = @AddressLine1, AddressLine2 = @AddressLine2,
+                AreaName         = @AreaName,  Landmark     = @Landmark,     Pincode      = @Pincode,
+                Latitude         = @Latitude,  Longitude    = @Longitude,    GoogleMapLink= @GoogleMapLink,
+                HallName         = @HallName,  GroundName   = @GroundName,
+                ParkingAvailable = ISNULL(@ParkingAvailable, ParkingAvailable),
+                ParkingDetails   = @ParkingDetails,
+                CountryId        = @CountryId, StateId = @StateId, CityId = @CityId,
+                VenueType        = @VenueType, VenueCategory = @VenueCategory, Facilities = @Facilities,
+                Capacity         = @VenueCapacity,
+                ContactPerson    = @ContactPerson,
+                ContactDesignation = @ContactDesignation,
+                ContactPhoneCode = @ContactPhoneCode,
+                ContactPhone     = @ContactPhone,
+                ContactEmail     = @ContactEmail,
+                Notes            = @Notes,
+                OtherFacility    = @OtherFacility,
+                UpdatedBy        = @ActorBy,   UpdatedDate = GETDATE(), UpdatedFrom = @ActorFrom
+            WHERE EventId = @EventId;
+
+            UPDATE Tracket_Master_Event_Document
+            SET IsDeleted=1, UpdatedBy=@ActorBy, UpdatedDate=GETDATE(), UpdatedFrom=@ActorFrom
+            WHERE EventId=@EventId AND IsDeleted=0;
+
+            INSERT INTO Tracket_Master_Event_Document (
+                EventId, FileName, FilePath, IsPrimary, DisplayOrder, ThumbnailPath,
+                IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+            )
+            SELECT @EventId, DocumentName, RelativePath,
+                   ISNULL(IsPrimary,0), ISNULL(DisplayOrder,0), ThumbnailPath,
+                   0, @ActorBy, GETDATE(), @ActorFrom
+            FROM OPENJSON(@JsonData, '$.Documents')
+            WITH (
+                DocumentName  NVARCHAR(500) '$.DocumentName',
+                RelativePath  NVARCHAR(MAX) '$.RelativePath',
+                IsPrimary     BIT           '$.IsPrimary',
+                DisplayOrder  INT           '$.DisplayOrder',
+                ThumbnailPath NVARCHAR(500) '$.ThumbnailPath'
+            );
+
+            -- Update Organizer
+            IF EXISTS (SELECT 1 FROM Tracket_Master_Event_Organizer WHERE EventId = @EventId)
+            BEGIN
+                UPDATE Tracket_Master_Event_Organizer
+                SET OrganizerTypeId = @OrganizerTypeId,
+                    OrganizationName = @OrganizationName,
+                    GSTIN = @GSTIN,
+                    PANNumber = @PANNumber,
+                    Website = @OrgWebsite,
+                    PrimaryEmail = @OrgPrimaryEmail,
+                    PrimaryPhone = @OrgPrimaryPhone,
+                    AlternatePhone = @OrgAlternatePhone,
+                    Address = @OrgAddress,
+                    City = @OrgCity,
+                    State = @OrgState,
+                    Country = @OrgCountry,
+                    PinCode = @OrgPinCode,
+                    PrimaryContactName = @PrimaryContactName,
+                    PrimaryContactDesignation = @PrimaryContactDesignation,
+                    PrimaryContactEmail = @PrimaryContactEmail,
+                    PrimaryContactPhone = @PrimaryContactPhone,
+                    EmergencyContactName = @EmergencyContactName,
+                    EmergencyContactRelationship = @EmergencyContactRelationship,
+                    EmergencyContactPhone = @EmergencyContactPhone,
+                    EmergencyAlternatePhone = @EmergencyAlternatePhone,
+                    YearEstablished = @YearEstablished,
+                    EmployeeCountId = @EmployeeCountId,
+                    IndustryId = @IndustryId,
+                    BusinessTypeId = @BusinessTypeId,
+                    RegistrationNumber = @RegistrationNumber,
+                    RegisteredAddress = @RegisteredAddress,
+                    FacebookLink = @OrgFacebookLink,
+                    InstagramLink = @OrgInstagramLink,
+                    LinkedInLink = @OrgLinkedInLink,
+                    TwitterLink = @OrgTwitterLink,
+                    YouTubeLink = @OrgYouTubeLink,
+                    OrganizationLogo = @OrganizationLogo,
+                    GSTCertificate = @GSTCertificate,
+                    PANCardDocument = @PANCardDocument,
+                    RegistrationCertificate = @RegistrationCertificate,
+                    OtherDocument = @OtherDocument,
+                    UpdatedBy = @ActorBy,
+                    UpdatedDate = GETDATE(),
+                    UpdatedFrom = @ActorFrom
+                WHERE EventId = @EventId;
+            END
+            ELSE
+            BEGIN
+                INSERT INTO Tracket_Master_Event_Organizer (
+                    UserId, EventId, OrganizerTypeId, OrganizationName, GSTIN, PANNumber, Website,
+                    PrimaryEmail, PrimaryPhone, AlternatePhone, Address, City, State, Country, PinCode,
+                    PrimaryContactName, PrimaryContactDesignation, PrimaryContactEmail, PrimaryContactPhone,
+                    EmergencyContactName, EmergencyContactRelationship, EmergencyContactPhone, EmergencyAlternatePhone,
+                    YearEstablished, EmployeeCountId, IndustryId, BusinessTypeId, RegistrationNumber, RegisteredAddress,
+                    FacebookLink, InstagramLink, LinkedInLink, TwitterLink, YouTubeLink,
+                    OrganizationLogo, GSTCertificate, PANCardDocument, RegistrationCertificate, OtherDocument,
+                    IsActive, IsDeleted, CreatedBy, CreatedDate, CreatedFrom, PublicId
+                )
+                VALUES (
+                    @UserId, @EventId, @OrganizerTypeId, @OrganizationName, @GSTIN, @PANNumber, @OrgWebsite,
+                    @OrgPrimaryEmail, @OrgPrimaryPhone, @OrgAlternatePhone, @OrgAddress, @OrgCity, @OrgState, @OrgCountry, @OrgPinCode,
+                    @PrimaryContactName, @PrimaryContactDesignation, @PrimaryContactEmail, @PrimaryContactPhone,
+                    @EmergencyContactName, @EmergencyContactRelationship, @EmergencyContactPhone, @EmergencyAlternatePhone,
+                    @YearEstablished, @EmployeeCountId, @IndustryId, @BusinessTypeId, @RegistrationNumber, @RegisteredAddress,
+                    @OrgFacebookLink, @OrgInstagramLink, @OrgLinkedInLink, @OrgTwitterLink, @OrgYouTubeLink,
+                    @OrganizationLogo, @GSTCertificate, @PANCardDocument, @RegistrationCertificate, @OtherDocument,
+                    1, 0, @ActorBy, GETDATE(), @ActorFrom, NEWID()
+                );
+            END
+
+        END
+
+        -- SMART UPSERT & TARGETED DELETION FOR Tracket_Master_Event_Slot (USING SLOTID ONLY)
+        -- ===============================
+        -- 1. TARGETED DELETION (Sirf vahi slot delete hoga jo frontend se nahi aaya)
+        IF EXISTS (SELECT 1 FROM OPENJSON(@JsonData, '$.Slots'))
+        BEGIN
+            UPDATE S
+            SET S.IsDeleted = 1, 
+                S.UpdatedBy = @ActorBy, 
+                S.UpdatedDate = GETDATE(), 
+                S.UpdatedFrom = @ActorFrom
+            FROM Tracket_Master_Event_Slot S
+            WHERE S.EventId = @EventId 
+              AND S.IsDeleted = 0
+              AND S.EventMode = @DateTimeMode
+              AND S.SlotId NOT IN (
+                  SELECT SlotId 
+                  FROM OPENJSON(@JsonData, '$.Slots')
+                  WITH (SlotId BIGINT '$.SlotId')
+                  WHERE SlotId IS NOT NULL AND SlotId > 0
+              );
+        END
+
+        -- 2. PROCESS METHODS BASE ON CURRENT MODE
+        IF @StartDate IS NOT NULL
+        BEGIN
+            -- ─── SINGLE MODE UPSERT ──────────────────────────────────────────
+            IF @DateTimeMode = 'single'
+            BEGIN
+                IF EXISTS (SELECT 1 FROM OPENJSON(@JsonData, '$.Slots'))
+                BEGIN
+                    -- A. Update Existing Slots (Matching SlotId)
+                    UPDATE S
+                    SET S.StartTime = TRY_CAST(J.StartTime AS TIME),
+                        S.EndTime = TRY_CAST(J.EndTime AS TIME),
+                        S.StartDate = TRY_CAST(CONCAT(J.SlotDate, 'T', J.StartTime) AS DATETIME),
+                        S.EndDate = TRY_CAST(CONCAT(J.SlotDate, 'T', J.EndTime) AS DATETIME),
+                        S.Capacity = ISNULL(J.Capacity, 0),
+                        S.SlotName = ISNULL(J.SlotName, @EventName),
+                        S.TicketPrice = ISNULL(J.TicketPrice, 0),
+                        S.Timezone = @Timezone,
+                        S.AllDay = ISNULL(@AllDay, 0),
+                        S.ShowCountdown = ISNULL(@ShowCountdown, 1),
+                        S.UpdatedBy = @ActorBy,
+                        S.UpdatedDate = GETDATE(),
+                        S.UpdatedFrom = @ActorFrom
+                    FROM Tracket_Master_Event_Slot S
+                    INNER JOIN OPENJSON(@JsonData, '$.Slots')
+                    WITH (
+                        SlotId BIGINT '$.SlotId',
+                        SlotDate NVARCHAR(10) '$.SlotDate',
+                        StartTime NVARCHAR(10) '$.StartTime',
+                        EndTime NVARCHAR(10) '$.EndTime',
+                        Capacity INT '$.Capacity',
+                        SlotName NVARCHAR(200) '$.SlotName',
+                        TicketPrice DECIMAL(18,2) '$.TicketPrice'
+                    ) J ON S.SlotId = J.SlotId
+                    WHERE S.EventId = @EventId AND S.IsDeleted = 0;
+
+                    -- B. Insert New Slots (Jinki SlotId ya toh 0 hai ya NULL)
+                    INSERT INTO Tracket_Master_Event_Slot (
+                        EventId, PublicId, StartTime, EndTime, StartDate, EndDate,
+                        Capacity, SlotName, TicketPrice, EventMode, Timezone, AllDay, ShowCountdown,
+                        SetupStartTime, TeardownEndTime, VisibilityStartDate, VisibilityStartTime,
+                        DurationDays, DurationHours, DurationMinutes, OccurrenceIndex,
+                        IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+                    )
+                    SELECT 
+                        @EventId,
+                        NEWID(), -- Auto-generate new GUID public token for new rows
+                        TRY_CAST(J.StartTime AS TIME), TRY_CAST(J.EndTime AS TIME),
+                        TRY_CAST(CONCAT(J.SlotDate, 'T', J.StartTime) AS DATETIME),
+                        TRY_CAST(CONCAT(J.SlotDate, 'T', J.EndTime) AS DATETIME),
+                        ISNULL(J.Capacity, 0), ISNULL(J.SlotName, @EventName), ISNULL(J.TicketPrice, 0),
+                        'single', @Timezone, ISNULL(@AllDay,0), ISNULL(@ShowCountdown,1),
+                        @SetupStartTime, @TeardownEndTime, TRY_CAST(@VisibilityStartDate AS DATE), @VisibilityStartTime,
+                        @DurationDays, @DurationHours, @DurationMinutes, ISNULL(J.OccurrenceIndex, 0),
+                        0, @ActorBy, GETDATE(), @ActorFrom
+                    FROM OPENJSON(@JsonData, '$.Slots')
+                    WITH (
+                        SlotId BIGINT '$.SlotId',
+                        SlotDate NVARCHAR(10) '$.SlotDate',
+                        StartTime NVARCHAR(10) '$.StartTime',
+                        EndTime NVARCHAR(10) '$.EndTime',
+                        Capacity INT '$.Capacity',
+                        SlotName NVARCHAR(200) '$.SlotName',
+                        TicketPrice DECIMAL(18,2) '$.TicketPrice',
+                        OccurrenceIndex INT '$.OccurrenceIndex'
+                    ) J
+                    WHERE J.SlotId IS NULL OR J.SlotId = 0;
+                END
+                ELSE
+                BEGIN
+                    -- Fallback agar JSON array khali ho
+                    IF NOT EXISTS (SELECT 1 FROM Tracket_Master_Event_Slot WHERE EventId = @EventId AND EventMode = 'single' AND IsDeleted = 0)
+                    BEGIN
+                        INSERT INTO Tracket_Master_Event_Slot (
+                            EventId, PublicId, StartTime, EndTime, StartDate, EndDate, Capacity, SlotName, TicketPrice,
+                            EventMode, Timezone, AllDay, ShowCountdown, SetupStartTime, TeardownEndTime,
+                            VisibilityStartDate, VisibilityStartTime, DurationDays, DurationHours, DurationMinutes,
+                            OccurrenceIndex, IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+                        )
+                        VALUES (
+                            @EventId, NEWID(), TRY_CAST(@StartTimeStr AS TIME), TRY_CAST(@EndTimeStr AS TIME), @StartDate, @EndDate,
+                            ISNULL(@Capacity,0), @EventName, ISNULL(@TicketPrice,0), 'single', @Timezone, ISNULL(@AllDay,0), ISNULL(@ShowCountdown,1),
+                            @SetupStartTime, @TeardownEndTime, TRY_CAST(@VisibilityStartDate AS DATE), @VisibilityStartTime,
+                            @DurationDays, @DurationHours, @DurationMinutes, 0, 0, @ActorBy, GETDATE(), @ActorFrom
+                        );
+                    END
+                END
+            END
+
+            -- ─── RECURRING MODE (Isme hamesha series fresh recreate hoti hai) ───
+            IF @DateTimeMode = 'recurring'
+            BEGIN
+                UPDATE Tracket_Master_Event_Slot
+                SET IsDeleted=1, UpdatedBy=@ActorBy, UpdatedDate=GETDATE(), UpdatedFrom=@ActorFrom
+                WHERE EventId=@EventId AND EventMode = 'recurring' AND IsDeleted=0;
+
+                DECLARE @OccDate  DATE = CAST(@StartDate AS DATE);
+                DECLARE @RecurEnd DATE = ISNULL(TRY_CAST(@RecurrenceEndDate AS DATE), CAST(@EndDate AS DATE));
+                DECLARE @OccIdx   INT  = 0;
+                DECLARE @CleanStart NVARCHAR(8) = CASE WHEN @StartTimeStr = '' THEN '00:00' ELSE @StartTimeStr END;
+                DECLARE @CleanEnd   NVARCHAR(8) = CASE WHEN @EndTimeStr = ''   THEN '00:00' ELSE @EndTimeStr   END;
+
+                WHILE @OccDate <= @RecurEnd AND @OccIdx < 365
+                BEGIN
+                    DECLARE @OccStart DATETIME = CAST(CONCAT(CONVERT(NVARCHAR(10), @OccDate, 120), ' ', @CleanStart) AS DATETIME);
+                    DECLARE @OccEnd   DATETIME = CAST(CONCAT(CONVERT(NVARCHAR(10), @OccDate, 120), ' ', @CleanEnd) AS DATETIME);
+
+                    INSERT INTO Tracket_Master_Event_Slot (
+                        EventId, PublicId, StartTime, EndTime, StartDate, EndDate, Capacity, SlotName, TicketPrice,
+                        EventMode, Timezone, AllDay, ShowCountdown, SetupStartTime, TeardownEndTime,
+                        VisibilityStartDate, VisibilityStartTime, DurationDays, DurationHours, DurationMinutes,
+                        RecurrenceFrequency, RecurrenceInterval, RecurrenceEndDate, OccurrenceIndex,
+                        IsDeleted, CreatedBy, CreatedDate, CreatedFrom
+                    )
+                    VALUES (
+                        @EventId, NEWID(), TRY_CAST(@StartTimeStr AS TIME), TRY_CAST(@EndTimeStr AS TIME), @OccStart, @OccEnd,
+                        ISNULL(@Capacity,0), @EventName + ' #' + CAST(@OccIdx+1 AS NVARCHAR(10)), ISNULL(@TicketPrice,0),
+                        'recurring', @Timezone, ISNULL(@AllDay,0), ISNULL(@ShowCountdown,1),
+                        @SetupStartTime, @TeardownEndTime, TRY_CAST(@VisibilityStartDate AS DATE), @VisibilityStartTime,
+                        @DurationDays, @DurationHours, @DurationMinutes, @RecurrenceFrequency, @RecurrenceInterval, @RecurEnd,
+                        @OccIdx, 0, @ActorBy, GETDATE(), @ActorFrom
+                    );
+
+                    IF @RecurrenceFrequency = 'daily'
+                        SET @OccDate = DATEADD(DAY,   @RecurrenceInterval, @OccDate);
+                    ELSE IF @RecurrenceFrequency = 'weekly'
+                        SET @OccDate = DATEADD(WEEK,  @RecurrenceInterval, @OccDate);
+                    ELSE IF @RecurrenceFrequency = 'monthly'
+                        SET @OccDate = DATEADD(MONTH, @RecurrenceInterval, @OccDate);
+                    ELSE
+                        SET @OccDate = DATEADD(DAY, 1, @RecurEnd);
+
+                    SET @OccIdx = @OccIdx + 1;
+                END
+            END
+        END
+
+        -- ================================================================
+        -- STEP 4: Zone-Asset Allocation & Item Breakdown (Set-Based, No Cursors)
+        -- ================================================================
+        IF @MetaJson IS NOT NULL AND ISJSON(@MetaJson) = 1
+        BEGIN
+            -- ── Extract scalar details values ────────────────────────────────
+            SELECT
+                @ZoneId          = NULLIF(JSON_VALUE(@MetaJson, '$.details.zoneId'), ''),
+                @AssetId         = NULLIF(JSON_VALUE(@MetaJson, '$.details.assetId'), ''),
+                @ArrangementType = NULLIF(JSON_VALUE(@MetaJson, '$.details.arrangementType'), ''),
+                @RowCount        = NULLIF(JSON_VALUE(@MetaJson, '$.details.rows'), ''),
+                @ColumnCount     = NULLIF(JSON_VALUE(@MetaJson, '$.details.columns'), '');
+
+            IF @EventId > 0 AND @ZoneId IS NOT NULL AND @ZoneId > 0
+            BEGIN
+                -- ── Resolve ArrangementTypeId ────────────────────────────────
+                SET @ArrangementTypeId = 0;
+                IF @ArrangementType IS NOT NULL
+                BEGIN
+                    SELECT @ArrangementTypeId = V.ValueId
+                    FROM Tracket_Master_GeneralMasterValue V
+                    INNER JOIN Tracket_Master_GeneralMasterCategory C ON V.CategoryId = C.CategoryId
+                    WHERE C.DDL_ID = 'ArrangementType' AND V.Description = @ArrangementType;
+                END
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4A: INVENTORY RESTORE
+                -- Before touching allocations, restore AvailableQty for ALL
+                -- previously allocated assets in this Event+Zone in one shot.
+                -- ──────────────────────────────────────────────────────────────
+                UPDATE MA
+                SET MA.AvailableQty = ISNULL(MA.AvailableQty, 0) + EZA.Quantity,
+                    MA.UpdatedBy    = @ActorBy,
+                    MA.UpdatedDate  = GETDATE(),
+                    MA.UpdatedFrom  = @ActorFrom
+                FROM dbo.Tracket_Master_Asset MA
+                INNER JOIN dbo.Tracket_Master_Event_Zone_Asset EZA
+                    ON MA.AssetId = EZA.AssetId
+                WHERE EZA.EventId  = @EventId
+                  AND EZA.ZoneId   = @ZoneId
+                  AND EZA.IsDeleted = 0
+                  AND EZA.Quantity  > 0
+                  AND MA.IsDeleted  = 0;
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4B: PARSE INCOMING ASSET ITEMS FROM JSON
+                -- Build an in-memory table with one row per item in assetItems.
+                -- ALL items (chair, stage, door, booth, etc.) are captured here
+                -- without any LIKE filter.
+                -- ──────────────────────────────────────────────────────────────
+                -- @IncomingItems: one row per item in $.details.assetItems
+                -- Note: no ItemId column — DB has no such column; match key is (RowName + ColumnNo)
+                DECLARE @IncomingItems TABLE (
+                    AssetId    BIGINT,
+                    SeatLabel  NVARCHAR(100),
+                    RowName    NVARCHAR(20),
+                    ColumnNo   INT,
+                    ItemStatus NVARCHAR(50),
+                    Price      DECIMAL(18,2),
+                    Remarks    NVARCHAR(500)
+                );
+
+                INSERT INTO @IncomingItems (AssetId, SeatLabel, RowName, ColumnNo, ItemStatus, Price, Remarks)
+                SELECT
+                    ISNULL(TRY_CAST(assetId AS BIGINT), 0),
+                    ISNULL(label,    'Item'),
+                    ISNULL(rowName,  ''),
+                    ISNULL(columnNo, 0),
+                    ISNULL(status,   'Available'),
+                    ISNULL(price,    0),
+                    ISNULL(remarks,  '')
+                FROM OPENJSON(@MetaJson, '$.details.assetItems')
+                WITH (
+                    assetId   NVARCHAR(50)  '$.assetId',
+                    label     NVARCHAR(100) '$.label',
+                    rowName   NVARCHAR(20)  '$.rowName',
+                    columnNo  INT           '$.columnNo',
+                    status    NVARCHAR(50)  '$.status',
+                    price     DECIMAL(18,2) '$.price',
+                    remarks   NVARCHAR(500) '$.remarks'
+                );
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4C: SUMMARY MERGE — Tracket_Master_Event_Zone_Asset
+                -- One row per unique AssetId for this Event+Zone.
+                -- Quantity = COUNT(*) of items with that assetId in the canvas.
+                -- Items without a valid assetId (layout-only, assetId = 0)
+                -- are rolled into the primary assetId from the details scalar.
+                -- ──────────────────────────────────────────────────────────────
+
+                -- Soft-delete asset-zone rows whose assetId is no longer present
+                -- in the incoming payload (clean up stale allocations).
+                UPDATE EZA
+                SET EZA.IsDeleted   = 1,
+                    EZA.UpdatedBy   = @ActorBy,
+                    EZA.UpdatedDate = GETDATE(),
+                    EZA.UpdatedFrom = @ActorFrom
+                FROM dbo.Tracket_Master_Event_Zone_Asset EZA
+                WHERE EZA.EventId  = @EventId
+                  AND EZA.ZoneId   = @ZoneId
+                  AND EZA.IsDeleted = 0
+                  AND (EZA.ComponentId IS NULL OR EZA.ComponentId = 0)  -- ONLY target assets!
+                  AND EZA.AssetId NOT IN (
+                      SELECT DISTINCT NULLIF(AssetId, 0)
+                      FROM @IncomingItems
+                      WHERE AssetId > 0
+                      UNION
+                      SELECT ISNULL(NULLIF(@AssetId, 0), -1)  -- keep the primary AssetId
+                  );
+
+                -- MERGE: upsert one summary row per distinct AssetId
+                MERGE dbo.Tracket_Master_Event_Zone_Asset AS Target
+                USING (
+                    -- Group incoming items by AssetId; items with assetId = 0
+                    -- (pure layout components like walls, doors) are attributed
+                    -- to the primary @AssetId so they are still recorded.
+                    SELECT
+                        CASE WHEN AssetId > 0 THEN AssetId ELSE ISNULL(@AssetId, 0) END AS AssetId,
+                        COUNT(*)  AS ItemCount
+                    FROM @IncomingItems
+                    GROUP BY CASE WHEN AssetId > 0 THEN AssetId ELSE ISNULL(@AssetId, 0) END
+                ) AS Source (AssetId, ItemCount)
+                ON  Target.EventId   = @EventId
+                AND Target.ZoneId    = @ZoneId
+                AND Target.AssetId   = Source.AssetId
+                AND (Target.ComponentId IS NULL OR Target.ComponentId = 0)  -- ONLY target assets!
+                WHEN MATCHED THEN
+                    UPDATE SET
+                        Target.Quantity         = Source.ItemCount,
+                        Target.ArrangementTypeId = ISNULL(@ArrangementTypeId, 0),
+                        Target.[RowCount]        = @RowCount,
+                        Target.[ColumnCount]     = @ColumnCount,
+                        Target.IsDeleted         = 0,   -- re-activate if previously soft-deleted
+                        Target.UpdatedBy         = @ActorBy,
+                        Target.UpdatedDate       = GETDATE(),
+                        Target.UpdatedFrom       = @ActorFrom
+                WHEN NOT MATCHED BY TARGET THEN
+                    INSERT (EventId, ZoneId, AssetId, ArrangementTypeId, Quantity, [RowCount], [ColumnCount], IsActive, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
+                    VALUES (@EventId, @ZoneId, Source.AssetId, ISNULL(@ArrangementTypeId, 0), Source.ItemCount,
+                            @RowCount, @ColumnCount, 1, 0, @ActorBy, GETDATE(), @ActorFrom);
+
+                -- Fallback: if assetItems was empty but @AssetId is set, ensure at least one row
+                IF @AssetId IS NOT NULL AND @AssetId > 0 AND NOT EXISTS (
+                    SELECT 1 FROM @IncomingItems
+                )
+                BEGIN
+                    SET @Quantity = ISNULL(@RowCount, 1) * ISNULL(@ColumnCount, 1);
+
+                    MERGE dbo.Tracket_Master_Event_Zone_Asset AS T
+                    USING (SELECT @AssetId AS AssetId, @Quantity AS Qty) AS S (AssetId, Qty)
+                    ON T.EventId = @EventId AND T.ZoneId = @ZoneId AND T.AssetId = S.AssetId
+                    AND (T.ComponentId IS NULL OR T.ComponentId = 0)  -- ONLY target assets!
+                    WHEN MATCHED THEN
+                        UPDATE SET T.Quantity = S.Qty, T.ArrangementTypeId = ISNULL(@ArrangementTypeId,0),
+                                   T.[RowCount] = @RowCount, T.[ColumnCount] = @ColumnCount,
+                                   T.IsDeleted = 0, T.UpdatedBy = @ActorBy, T.UpdatedDate = GETDATE(), T.UpdatedFrom = @ActorFrom
+                    WHEN NOT MATCHED THEN
+                        INSERT (EventId, ZoneId, AssetId, ArrangementTypeId, Quantity, [RowCount], [ColumnCount], IsActive, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
+                        VALUES (@EventId, @ZoneId, @AssetId, ISNULL(@ArrangementTypeId,0), S.Qty, @RowCount, @ColumnCount, 1, 0, @ActorBy, GETDATE(), @ActorFrom);
+                END
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4D: INVENTORY DEDUCT
+                -- Deduct AvailableQty for every unique asset now allocated.
+                -- Uses set-based join — no loops.
+                -- Floor at 0 to avoid negative stock.
+                -- ──────────────────────────────────────────────────────────────
+                UPDATE MA
+                SET MA.AvailableQty = CASE
+                                          WHEN ISNULL(MA.AvailableQty, 0) >= EZA.Quantity
+                                          THEN ISNULL(MA.AvailableQty, 0) - EZA.Quantity
+                                          ELSE 0
+                                      END,
+                    MA.UpdatedBy    = @ActorBy,
+                    MA.UpdatedDate  = GETDATE(),
+                    MA.UpdatedFrom  = @ActorFrom
+                FROM dbo.Tracket_Master_Asset MA
+                INNER JOIN dbo.Tracket_Master_Event_Zone_Asset EZA
+                    ON MA.AssetId = EZA.AssetId
+                WHERE EZA.EventId  = @EventId
+                  AND EZA.ZoneId   = @ZoneId
+                  AND EZA.IsDeleted = 0
+                  AND EZA.Quantity  > 0
+                  AND MA.IsDeleted  = 0;
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4F: LAYOUT COMPONENTS SYNC — Tracket_Master_Event_Zone_Asset
+                -- Parse components from $.details.components and sync them.
+                -- ──────────────────────────────────────────────────────────────
+                DECLARE @IncomingComponents TABLE (
+                    ItemId        NVARCHAR(100),
+                    ComponentId   BIGINT,
+                    PositionX     DECIMAL(18, 2),
+                    PositionY     DECIMAL(18, 2),
+                    Width         DECIMAL(18, 2),
+                    Height        DECIMAL(18, 2),
+                    RotationAngle DECIMAL(18, 2)
+                );
+
+                INSERT INTO @IncomingComponents (ItemId, ComponentId, PositionX, PositionY, Width, Height, RotationAngle)
+                SELECT
+                    ISNULL(itemId,   ''),
+                    ISNULL(TRY_CAST(componentId AS BIGINT), 0),
+                    ISNULL(x,        0.00),
+                    ISNULL(y,        0.00),
+                    ISNULL(w,        0.00),
+                    ISNULL(h,        0.00),
+                    ISNULL(rotation, 0.00)
+                FROM OPENJSON(@MetaJson, '$.details.components')
+                WITH (
+                    itemId       NVARCHAR(100) '$.itemId',
+                    componentId  NVARCHAR(50)  '$.assetId', -- Note: frontend mappers serializes ComponentId to 'assetId' field for components
+                    x            DECIMAL(18,2) '$.x',
+                    y            DECIMAL(18,2) '$.y',
+                    w            DECIMAL(18,2) '$.w',
+                    h            DECIMAL(18,2) '$.h',
+                    rotation     DECIMAL(18,2) '$.rotation'
+                );
+
+                -- Insert/Update layout components via MERGE
+                MERGE dbo.Tracket_Master_Event_Zone_Asset AS Target
+                USING (
+                    SELECT
+                        ItemId,
+                        NULLIF(ComponentId, 0) AS ComponentId,
+                        PositionX,
+                        PositionY,
+                        Width,
+                        Height,
+                        RotationAngle
+                    FROM @IncomingComponents
+                    WHERE ItemId <> ''
+                ) AS Source
+                ON Target.EventId = @EventId
+               AND Target.ZoneId = @ZoneId
+               AND Target.ItemId = Source.ItemId
+                WHEN MATCHED THEN
+                    UPDATE SET
+                        Target.ComponentId = Source.ComponentId,
+                        Target.PositionX = Source.PositionX,
+                        Target.PositionY = Source.PositionY,
+                        Target.Width = Source.Width,
+                        Target.Height = Source.Height,
+                        Target.RotationAngle = Source.RotationAngle,
+                        Target.IsDeleted = 0,
+                        Target.UpdatedBy = @ActorBy,
+                        Target.UpdatedDate = GETDATE(),
+                        Target.UpdatedFrom = @ActorFrom
+                WHEN NOT MATCHED BY TARGET THEN
+                    INSERT (EventId, ZoneId, AssetId, ArrangementTypeId, Quantity, 
+                            IsActive, IsDeleted, CreatedBy, CreatedDate, CreatedFrom,
+                            ComponentId, PositionX, PositionY, Width, Height, RotationAngle, ItemId)
+                    VALUES (@EventId, @ZoneId, NULL, 0, 1, 
+                            1, 0, @ActorBy, GETDATE(), @ActorFrom,
+                            Source.ComponentId, Source.PositionX, Source.PositionY, Source.Width, Source.Height, Source.RotationAngle, Source.ItemId)
+                WHEN NOT MATCHED BY SOURCE AND Target.EventId = @EventId AND Target.ZoneId = @ZoneId AND Target.ItemId IS NOT NULL AND Target.IsDeleted = 0 THEN
+                    UPDATE SET
+                        Target.IsDeleted = 1,
+                        Target.UpdatedBy = @ActorBy,
+                        Target.UpdatedDate = GETDATE(),
+                        Target.UpdatedFrom = @ActorFrom;
+
+                -- ──────────────────────────────────────────────────────────────
+                -- STEP 4E: BREAKDOWN SYNC — Tracket_Master_Event_Zone_Seat (Targeted by ZoneAssetId)
+                -- Every row in $.details.assetItems gets its own seat/item row.
+                -- Every generated seat stores the corresponding ZoneAssetId.
+                -- Match key for deletes: ZoneAssetId (Targeted Deletion of modified assets only)
+                -- ──────────────────────────────────────────────────────────────
+
+                -- 4E-1. Resolve ZoneAssetId for each incoming seating item by matching
+                --        its AssetId against Tracket_Master_Event_Zone_Asset.
+                DECLARE @ResolvedIncomingSeats TABLE (
+                    SeatRId     NVARCHAR(50),
+                    ZoneId      BIGINT,
+                    EventId     BIGINT,
+                    SeatNumber  NVARCHAR(50),
+                    RowName     NVARCHAR(20),
+                    ColumnNo    INT,
+                    SeatStatus  NVARCHAR(50),
+                    Price       DECIMAL(18,2),
+                    Remarks     NVARCHAR(500),
+                    ZoneAssetId BIGINT
+                );
+
+                INSERT INTO @ResolvedIncomingSeats (
+                    SeatRId, ZoneId, EventId, SeatNumber, RowName, ColumnNo, SeatStatus, Price, Remarks, ZoneAssetId
+                )
+                SELECT
+                    NULL,   -- SeatRId will be generated as NEWID() on insert
+                    @ZoneId,
+                    @EventId,
+                    I.SeatLabel,
+                    I.RowName,
+                    I.ColumnNo,
+                    I.ItemStatus,
+                    I.Price,
+                    I.Remarks,
+                    A.ZoneAssetId
+                FROM @IncomingItems I
+                INNER JOIN dbo.Tracket_Master_Event_Zone_Asset A
+                    ON  A.EventId = @EventId
+                    AND A.ZoneId = @ZoneId
+                    AND A.AssetId = CASE WHEN I.AssetId > 0 THEN I.AssetId ELSE ISNULL(@AssetId, 0) END
+                    AND A.IsDeleted = 0
+                    AND (A.ComponentId IS NULL OR A.ComponentId = 0);
+
+                -- 4E-2. Targeted Deletion: Delete seats only for the assets/ZoneAssetIds being saved/updated.
+                --        This preserves seats of other assets (like Sofas or Tables) in the same zone.
+                DELETE FROM dbo.Tracket_Master_Event_Zone_Seat
+                WHERE EventId = @EventId
+                  AND ZoneId = @ZoneId
+                  AND ZoneAssetId IN (SELECT DISTINCT ZoneAssetId FROM @ResolvedIncomingSeats);
+
+                -- 4E-3. Insert regenerated seats with correct ZoneAssetId mapping.
+                INSERT INTO dbo.Tracket_Master_Event_Zone_Seat (
+                    SeatRId,    ZoneId,     EventId,    SeatNumber,
+                    RowName,    ColumnNo,   SeatStatus,
+                    IsBooked,   IsBlocked,  IsReserved,
+                    Price,      Remarks,    IsDeleted,
+                    CreatedBy,  CreatedDate, CreatedFrom, ZoneAssetId
+                )
+                SELECT
+                    REPLACE(NEWID(), '-', ''),   -- auto-generated unique SeatRId
+                    @ZoneId,
+                    @EventId,
+                    R.SeatNumber,
+                    R.RowName,
+                    R.ColumnNo,
+                    R.SeatStatus,
+                    0 AS IsBooked,
+                    CASE WHEN R.SeatStatus = 'Blocked'  THEN 1 ELSE 0 END,
+                    CASE WHEN R.SeatStatus = 'Reserved' THEN 1 ELSE 0 END,
+                    R.Price,
+                    R.Remarks,
+                    0 AS IsDeleted,
+                    @ActorBy AS CreatedBy,
+                    GETDATE() AS CreatedDate,
+                    @ActorFrom AS CreatedFrom,
+                    R.ZoneAssetId
+                FROM @ResolvedIncomingSeats R;
+
+            END  -- end IF @EventId > 0 AND @ZoneId > 0
+        END  -- end IF @MetaJson IS NOT NULL
+
+        -- ================================================================
+        -- ALL operations succeeded — commit and return results
+        -- ================================================================
+        COMMIT TRANSACTION;
+
+        -- Table[0]: status (C# checks this first)
+        SELECT 201 AS ResultStatus, 'Event saved successfully.' AS ResultMessage;
+
+        -- Table[1]: event header (C# maps to EventResponse)
+        SELECT TOP 1
+            E.EventId, E.EventRId, E.PublicId,
+            E.EventName, E.EventCode,
+            E.EventCategoryId AS CategoryId, C.CategoryName,
+            E.EventSubCategoryId,
+            E.ThumbnailImage, E.BannerImage,
+            E.About, E.About AS Description,
+            E.TermsAndConditions,
+            E.ShortDescription, E.Slug,
+            E.SeoTitle, E.SeoDescription, E.SeoKeywords, E.Tags,
+            (SELECT MIN(StartDate) FROM Tracket_Master_Event_Slot WHERE EventId = E.EventId AND IsDeleted = 0) AS StartDate,
+            (SELECT MAX(EndDate) FROM Tracket_Master_Event_Slot WHERE EventId = E.EventId AND IsDeleted = 0) AS EndDate,
+            E.EventType, E.ListingType, E.BookingType,
+            E.Currency, E.TicketPrice, E.Capacity,
+            E.IsFree, E.IsPublic, E.IsPublishActive,
+            E.Status, E.ApprovalStatus, E.UserId,
+            E.Tagline, E.Purpose, E.TargetAudience,
+            E.MetaJson,
+            L.LocationId, L.VenueName, L.VenueName AS LocationName,
+            L.AddressLine1, L.AddressLine1 AS Address,
+            L.AddressLine2, L.AreaName, L.Landmark, L.Pincode,
+            L.Latitude, L.Longitude, L.GoogleMapLink,
+            L.HallName, L.GroundName, L.ParkingAvailable, L.ParkingDetails,
+            L.CountryId, L.StateId, L.CityId,
+            L.VenueType, L.VenueCategory, L.Facilities,
+            L.Capacity AS VenueCapacity,
+            L.ContactPerson, L.ContactDesignation, L.ContactPhoneCode, L.ContactPhone, L.ContactEmail,
+            L.Notes, L.OtherFacility,
+            E.CreatedBy, E.CreatedDate, E.CreatedFrom,
+            E.UpdatedBy, E.UpdatedDate, E.UpdatedFrom,
+            -- Step-5 Organizer fields
+            O.OrganizerTypeId, O.OrganizationName, O.GSTIN, O.PANNumber, O.Website AS OrgWebsite,
+            O.PrimaryEmail AS OrgPrimaryEmail, O.PrimaryPhone AS OrgPrimaryPhone, O.AlternatePhone AS OrgAlternatePhone,
+            O.Address AS OrgAddress, O.City AS OrgCity, O.State AS OrgState, O.Country AS OrgCountry, O.PinCode AS OrgPinCode,
+            O.PrimaryContactName, O.PrimaryContactDesignation, O.PrimaryContactEmail, O.PrimaryContactPhone,
+            O.EmergencyContactName, O.EmergencyContactRelationship, O.EmergencyContactPhone, O.EmergencyAlternatePhone,
+            O.YearEstablished, O.EmployeeCountId, O.IndustryId, O.BusinessTypeId, O.RegistrationNumber, O.RegisteredAddress,
+            O.FacebookLink AS OrgFacebookLink, O.InstagramLink AS OrgInstagramLink, O.LinkedInLink AS OrgLinkedInLink,
+            O.TwitterLink AS OrgTwitterLink, O.YouTubeLink AS OrgYouTubeLink, O.OrganizationLogo,
+            O.GSTCertificate, O.PANCardDocument, O.RegistrationCertificate, O.OtherDocument
+        FROM Tracket_Master_Event E
+        LEFT JOIN Tracket_Master_Event_Location L ON E.EventId = L.EventId
+        LEFT JOIN Tracket_Master_Event_Category C ON E.EventCategoryId = C.CategoryId
+        LEFT JOIN Tracket_Master_Event_Organizer O ON E.EventId = O.EventId AND O.IsDeleted = 0
+        WHERE E.EventId = @EventId AND E.IsDeleted = 0;
+
+        -- Table[2]: slots (C# maps to EventResponse.Slots)
+        SELECT
+            S.SlotId, S.PublicId, S.EventId,
+            S.StartDate AS SlotDate,
+            CONVERT(VARCHAR(8), S.StartTime, 108) AS StartTime,
+            CONVERT(VARCHAR(8), S.EndTime,   108) AS EndTime,
+            S.StartDate, S.EndDate,
+            S.Capacity, S.SlotName, S.TicketPrice,
+            S.EventMode, S.Timezone, S.AllDay, S.ShowCountdown,
+            S.SetupStartTime, S.TeardownEndTime,
+            S.VisibilityStartDate, S.VisibilityStartTime,
+            S.DurationDays, S.DurationHours, S.DurationMinutes,
+            S.RecurrenceFrequency, S.RecurrenceInterval, S.RecurrenceEndDate,
+            S.OccurrenceIndex
+        FROM Tracket_Master_Event_Slot S
+        WHERE S.EventId = @EventId AND S.IsDeleted = 0
+        ORDER BY S.StartDate, S.OccurrenceIndex;
+
+        -- Table[3]: documents (C# maps to EventResponse.Documents)
+        SELECT DocumentId, FileName AS DocumentName, FilePath AS RelativePath,
+               IsPrimary, DisplayOrder, ThumbnailPath
+        FROM Tracket_Master_Event_Document
+        WHERE EventId = @EventId AND IsDeleted = 0;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        DECLARE @ErrMsg  NVARCHAR(4000) = ERROR_MESSAGE();
+        DECLARE @ErrLine INT            = ERROR_LINE();
+        -- Table[0] on error: status row that C# checks
+        SELECT 500 AS ResultStatus,
+               'Error at line ' + CAST(@ErrLine AS NVARCHAR(10)) + ': ' + @ErrMsg AS ResultMessage;
+    END CATCH
+END
+GO
+
+-- ============================================================================
+-- 4. Alter/Update USP_AddEditEventZoneSeat Stored Procedure
+-- ============================================================================
+IF OBJECT_ID('dbo.USP_AddEditEventZoneSeat', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.USP_AddEditEventZoneSeat;
+GO
+
+CREATE PROCEDURE [dbo].[USP_AddEditEventZoneSeat]
+    @JsonData NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    CREATE TABLE #TempSeats (
+        SeatId BIGINT, SeatRId NVARCHAR(50), ZoneId BIGINT, EventId BIGINT, SeatNumber NVARCHAR(50),
+        RowName NVARCHAR(20), ColumnNo INT, SeatStatus NVARCHAR(50), IsBooked BIT, IsBlocked BIT, IsReserved BIT,
+        Price DECIMAL(18,2), QRCode NVARCHAR(500), Barcode NVARCHAR(500), Remarks NVARCHAR(500), CreatedBy BIGINT,
+        ZoneAssetId BIGINT
+    );
+
+    INSERT INTO #TempSeats
+    SELECT 
+        SeatId, SeatRId, ZoneId, EventId, SeatNumber, RowName, ColumnNo, SeatStatus, IsBooked, IsBlocked, IsReserved,
+        Price, QRCode, Barcode, Remarks, CreatedBy, ZoneAssetId
+    FROM OPENJSON(@JsonData)
+    WITH (
+        SeatId BIGINT '$.SeatId',
+        SeatRId NVARCHAR(50) '$.SeatRId',
+        ZoneId BIGINT '$.ZoneId',
+        EventId BIGINT '$.EventId',
+        SeatNumber NVARCHAR(50) '$.SeatNumber',
+        RowName NVARCHAR(20) '$.RowName',
+        ColumnNo INT '$.ColumnNo',
+        SeatStatus NVARCHAR(50) '$.SeatStatus',
+        IsBooked BIT '$.IsBooked',
+        IsBlocked BIT '$.IsBlocked',
+        IsReserved BIT '$.IsReserved',
+        Price DECIMAL(18,2) '$.Price',
+        QRCode NVARCHAR(500) '$.QRCode',
+        Barcode NVARCHAR(500) '$.Barcode',
+        Remarks NVARCHAR(500) '$.Remarks',
+        CreatedBy BIGINT '$.CreatedBy',
+        ZoneAssetId BIGINT '$.ZoneAssetId'
+    );
+
+    -- Insert new seats
+    INSERT INTO Tracket_Master_Event_Zone_Seat
+        (SeatRId, ZoneId, EventId, SeatNumber, RowName, ColumnNo, SeatStatus, IsBooked, IsBlocked, IsReserved, Price, QRCode, Barcode, Remarks, IsDeleted, CreatedBy, CreatedDate, CreatedFrom, ZoneAssetId)
+    SELECT 
+        ISNULL(SeatRId, REPLACE(NEWID(), '-', '')), ZoneId, EventId, SeatNumber, RowName, ColumnNo, ISNULL(SeatStatus, 'Available'), ISNULL(IsBooked, 0), ISNULL(IsBlocked, 0), ISNULL(IsReserved, 0), Price, QRCode, Barcode, Remarks, 0, CreatedBy, GETDATE(), 'WebUI', ZoneAssetId
+    FROM #TempSeats T
+    WHERE NOT EXISTS (SELECT 1 FROM Tracket_Master_Event_Zone_Seat S WHERE S.SeatId = T.SeatId);
+
+    -- Update existing seats
+    UPDATE S
+    SET S.SeatNumber = T.SeatNumber,
+        S.RowName = T.RowName,
+        S.ColumnNo = T.ColumnNo,
+        S.SeatStatus = T.SeatStatus,
+        S.IsBooked = T.IsBooked,
+        S.IsBlocked = T.IsBlocked,
+        S.IsReserved = T.IsReserved,
+        S.Price = T.Price,
+        S.Remarks = T.Remarks,
+        S.UpdatedDate = GETDATE(),
+        S.ZoneAssetId = T.ZoneAssetId
+    FROM Tracket_Master_Event_Zone_Seat S
+    INNER JOIN #TempSeats T ON S.SeatId = T.SeatId;
+
+    DROP TABLE #TempSeats;
+
+    SELECT 200 AS ResultStatus, 'Seats saved successfully.' AS ResultMessage;
+END;
+GO
+
+-- ============================================================================
+-- 5. Alter/Update USP_GetEventZoneSeatList Stored Procedure (Returns AssetId via Join)
+-- ============================================================================
+IF OBJECT_ID('dbo.USP_GetEventZoneSeatList', 'P') IS NOT NULL
+    DROP PROCEDURE dbo.USP_GetEventZoneSeatList;
+GO
+
+CREATE PROCEDURE [dbo].[USP_GetEventZoneSeatList]
+    @ZoneId BIGINT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SELECT S.*, A.AssetId 
+    FROM Tracket_Master_Event_Zone_Seat S
+    LEFT JOIN Tracket_Master_Event_Zone_Asset A ON S.ZoneAssetId = A.ZoneAssetId
+    WHERE S.ZoneId = @ZoneId AND S.IsDeleted = 0;
+END;
+GO

@@ -1,0 +1,68 @@
+
+CREATE   PROCEDURE [dbo].[USP_AddEditEventZoneSeat]
+    @JsonData NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    CREATE TABLE #TempSeats (
+        SeatId BIGINT, SeatRId NVARCHAR(50), ZoneId BIGINT, EventId BIGINT, SeatNumber NVARCHAR(50),
+        RowName NVARCHAR(20), ColumnNo INT, SeatStatus NVARCHAR(50), IsBooked BIT, IsBlocked BIT, IsReserved BIT,
+        Price DECIMAL(18,2), QRCode NVARCHAR(500), Barcode NVARCHAR(500), Remarks NVARCHAR(500), CreatedBy BIGINT
+    );
+
+    INSERT INTO #TempSeats
+    SELECT 
+        SeatId, SeatRId, ZoneId, EventId, SeatNumber, RowName, ColumnNo, SeatStatus, IsBooked, IsBlocked, IsReserved,
+        Price, QRCode, Barcode, Remarks, CreatedBy
+    FROM OPENJSON(@JsonData)
+    WITH (
+        SeatId BIGINT '$.SeatId',
+        SeatRId NVARCHAR(50) '$.SeatRId',
+        ZoneId BIGINT '$.ZoneId',
+        EventId BIGINT '$.EventId',
+        SeatNumber NVARCHAR(50) '$.SeatNumber',
+        RowName NVARCHAR(20) '$.RowName',
+        ColumnNo INT '$.ColumnNo',
+        SeatStatus NVARCHAR(50) '$.SeatStatus',
+        IsBooked BIT '$.IsBooked',
+        IsBlocked BIT '$.IsBlocked',
+        IsReserved BIT '$.IsReserved',
+        Price DECIMAL(18,2) '$.Price',
+        QRCode NVARCHAR(500) '$.QRCode',
+        Barcode NVARCHAR(500) '$.Barcode',
+        Remarks NVARCHAR(500) '$.Remarks',
+        CreatedBy BIGINT '$.CreatedBy'
+    );
+
+    -- Insert new seats
+    INSERT INTO Tracket_Master_Event_Zone_Seat
+        (SeatRId, ZoneId, EventId, SeatNumber, RowName, ColumnNo, SeatStatus, IsBooked, IsBlocked, IsReserved, Price, QRCode, Barcode, Remarks, IsDeleted, CreatedBy, CreatedDate, CreatedFrom)
+    SELECT 
+        ISNULL(SeatRId, REPLACE(NEWID(), '-', '')), ZoneId, EventId, SeatNumber, RowName, ColumnNo, ISNULL(SeatStatus, 'Available'), ISNULL(IsBooked, 0), ISNULL(IsBlocked, 0), ISNULL(IsReserved, 0), Price, QRCode, Barcode, Remarks, 0, CreatedBy, GETDATE(), 'WebUI'
+    FROM #TempSeats T
+    WHERE NOT EXISTS (SELECT 1 FROM Tracket_Master_Event_Zone_Seat S WHERE S.SeatId = T.SeatId);
+
+    -- Update existing seats
+    UPDATE S
+    SET S.SeatNumber = T.SeatNumber,
+        S.RowName = T.RowName,
+        S.ColumnNo = T.ColumnNo,
+        S.SeatStatus = T.SeatStatus,
+        S.IsBooked = T.IsBooked,
+        S.IsBlocked = T.IsBlocked,
+        S.IsReserved = T.IsReserved,
+        S.Price = T.Price,
+        S.Remarks = T.Remarks,
+        S.UpdatedDate = GETDATE()
+    FROM Tracket_Master_Event_Zone_Seat S
+    INNER JOIN #TempSeats T ON S.SeatId = T.SeatId;
+
+    DROP TABLE #TempSeats;
+
+    SELECT 200 AS ResultStatus, 'Seats saved successfully.' AS ResultMessage;
+END;
+
+
+
+(1 rows affected)

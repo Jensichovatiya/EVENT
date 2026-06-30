@@ -1,0 +1,161 @@
+﻿CREATE   PROCEDURE dbo.USP_AddEditComponent
+    @JsonData NVARCHAR(MAX)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE
+        @ComponentId BIGINT,
+        @ComponentName NVARCHAR(200),
+        @ComponentCode NVARCHAR(50),
+        @CategoryId BIGINT,
+        @Description NVARCHAR(1000),
+        @IconUrl NVARCHAR(500),
+
+        @IsBookable BIT,
+        @BookableAsId BIGINT,
+
+        @AccessibilityId BIGINT,
+        @AccessTypeId BIGINT,
+
+        @ShapeTypeId BIGINT,
+
+        @Width DECIMAL(18,2),
+        @Height DECIMAL(18,2),
+        @RotationAngle DECIMAL(18,2),
+
+        @BackgroundColor NVARCHAR(20),
+        @BorderColor NVARCHAR(20),
+        @BorderWidth DECIMAL(18,2),
+        @Opacity DECIMAL(5,2),
+
+        @CurrencyId BIGINT,
+        @DefaultBookingPrice DECIMAL(18,2),
+
+        @SnapToGrid BIT,
+        @IsStackable BIT,
+        @IsMovable BIT,
+        @IsResizable BIT,
+
+        @DefaultLabel NVARCHAR(100),
+        @LabelPositionId BIGINT,
+        @ShowLabel BIT,
+
+        @ZIndex INT,
+        @Notes NVARCHAR(1000),
+
+        @CreatedBy NVARCHAR(256),
+        @CreatedFrom NVARCHAR(100),
+        @UpdatedBy NVARCHAR(256),
+        @UpdatedFrom NVARCHAR(100);
+
+    SELECT
+        @ComponentId = ComponentId,
+        @ComponentName = ComponentName,
+        @ComponentCode = ComponentCode,
+        @CategoryId = CategoryId,
+        @Description = Description,
+        @IconUrl = IconUrl,
+
+        @IsBookable = IsBookable,
+        @BookableAsId = BookableAsId,
+
+        @AccessibilityId = AccessibilityId,
+        @AccessTypeId = AccessTypeId,
+
+        @ShapeTypeId = ShapeTypeId,
+
+        @Width = Width,
+        @Height = Height,
+        @RotationAngle = RotationAngle,
+
+        @BackgroundColor = BackgroundColor,
+        @BorderColor = BorderColor,
+        @BorderWidth = BorderWidth,
+        @Opacity = Opacity,
+
+        @CurrencyId = CurrencyId,
+        @DefaultBookingPrice = DefaultBookingPrice,
+
+        @SnapToGrid = SnapToGrid,
+        @IsStackable = IsStackable,
+        @IsMovable = IsMovable,
+        @IsResizable = IsResizable,
+
+        @DefaultLabel = DefaultLabel,
+        @LabelPositionId = LabelPositionId,
+        @ShowLabel = ShowLabel,
+
+        @ZIndex = ZIndex,
+        @Notes = Notes,
+
+        @CreatedBy = CreatedBy,
+        @CreatedFrom = CreatedFrom,
+        @UpdatedBy = UpdatedBy,
+        @UpdatedFrom = UpdatedFrom
+
+    FROM OPENJSON(@JsonData)
+    WITH
+    (
+        ComponentId BIGINT,
+        ComponentName NVARCHAR(200),
+        ComponentCode NVARCHAR(50),
+        CategoryId BIGINT,
+        Description NVARCHAR(1000),
+        IconUrl NVARCHAR(500),
+
+        IsBookable BIT,
+        BookableAsId BIGINT,
+
+        AccessibilityId BIGINT,
+        AccessTypeId BIGINT,
+
+        ShapeTypeId BIGINT,
+
+        Width DECIMAL(18,2),
+        Height DECIMAL(18,2),
+        RotationAngle DECIMAL(18,2),
+
+        BackgroundColor NVARCHAR(20),
+        BorderColor NVARCHAR(20),
+        BorderWidth DECIMAL(18,2),
+        Opacity DECIMAL(5,2),
+
+        CurrencyId BIGINT,
+        DefaultBookingPrice DECIMAL(18,2),
+
+        SnapToGrid BIT,
+        IsStackable BIT,
+        IsMovable BIT,
+        IsResizable BIT,
+
+        DefaultLabel NVARCHAR(100),
+        LabelPositionId BIGINT,
+        ShowLabel BIT,
+
+        ZIndex INT,
+        Notes NVARCHAR(1000),
+
+        CreatedBy NVARCHAR(256),
+        CreatedFrom NVARCHAR(100),
+        UpdatedBy NVARCHAR(256),
+        UpdatedFrom NVARCHAR(100)
+    );
+
+    IF ISNULL(@ComponentId,0)=0
+    BEGIN
+
+        IF EXISTS
+        (
+            SELECT 1
+            FROM Tracket_Master_Component
+            WHERE ComponentName=@ComponentName
+            AND IsDeleted=0
+        )
+        BEGIN
+            SELECT 409 AS ResultStatus,
+                   'Component already exists.' AS ResultMessage;
+            RETURN;
+        END
+
+        INSERT INTO Tracket_Master_Comp

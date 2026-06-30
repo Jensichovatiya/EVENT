@@ -1,0 +1,43 @@
+﻿
+COLUMN_NAME         DATA_TYPE       
+-----------         ---------       
+ComponentId         bigint          
+ComponentRId        uniqueidentifier
+ComponentName       nvarchar        
+ComponentCode       nvarchar        
+CategoryId          bigint          
+Description         nvarchar        
+IconUrl             nvarchar        
+IsBookable          bit             
+Width               decimal         
+Height              decimal         
+RotationAngle       decimal         
+BackgroundColor     nvarchar        
+BorderColor         nvarchar        
+BorderWidth         decimal         
+Opacity             decimal         
+DefaultBookingPrice decimal         
+SnapToGrid          bit             
+IsStackable         bit             
+IsMovable           bit             
+IsResizable         bit             
+DefaultLabel        nvarchar        
+ShowLabel           bit             
+ZIndex              int             
+Notes               nvarchar        
+IsActive            bit             
+IsDeleted           bit             
+CreatedBy           nvarchar        
+CreatedDate         datetime        
+CreatedFrom         nvarchar        
+UpdatedBy           nvarchar        
+UpdatedDate         datetime        
+UpdatedFrom         nvarchar        
+BookableAsId        bigint          
+AccessibilityId     bigint          
+AccessTypeId        bigint          
+ShapeTypeId         bigint          
+CurrencyId          bigint          
+LabelPositionId     bigint          
+
+
