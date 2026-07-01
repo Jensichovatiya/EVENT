@@ -10,6 +10,8 @@ namespace EVENT.DAL.IRepository
     {
         Task<ApiResponseModel<AssetTypeResponse>> AddEditAssetTypeAsync(AssetTypeRequest request, IFormFile? iconFile);
         Task<ApiResponseModel<List<AssetTypeResponse>>> GetAssetTypesAsync();
+        Task<ApiResponseModel<AssetTypeResponse>> GetAssetTypeByIdAsync(long assetTypeId);
+        Task<ApiResponseModel<string>> DeleteAssetTypeAsync(long assetTypeId);
         Task<ApiResponseModel<AssetResponse>> AddEditAssetAsync(AssetRequest request);
         Task<ApiResponseModel<List<AssetResponse>>> GetAssetsAsync();
         Task<ApiResponseModel<string>> AllocateReturnAssetAsync(AssetAllocationRequest request);

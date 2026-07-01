@@ -62,8 +62,13 @@ export const eventApi = {
   },
 
   // Facilities
-  getFacilities: (): Promise<ApiResponseModel<any[]>> => {
-    return fetchClient('/facilities');
+  getFacilities: (searchText?: string, pageNumber?: number, pageSize?: number): Promise<ApiResponseModel<any[]>> => {
+    const params = new URLSearchParams();
+    if (searchText) params.append('searchText', searchText);
+    if (pageNumber) params.append('pageNumber', pageNumber.toString());
+    if (pageSize) params.append('pageSize', pageSize.toString());
+    const queryString = params.toString();
+    return fetchClient(queryString ? `/facilities?${queryString}` : '/facilities');
   },
 
   addEditFacility: (data: any): Promise<ApiResponseModel<any>> => {

@@ -189,10 +189,7 @@ namespace EVENT.DAL.Repository
             {
                 var parameters = new Dictionary<string, object>
                 {
-                    { "@ComponentId",  componentId },
-                    { "@UpdatedBy",    updatedBy    },
-                    { "@UpdatedFrom",  updatedFrom  }
-                };
+                    { "@ComponentId",  componentId }                };
 
                 DataSet ds = await _gf.GetDataSetFromSPAsync("USP_DeleteComponent", parameters);
 

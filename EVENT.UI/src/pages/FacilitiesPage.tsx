@@ -23,7 +23,7 @@ export const FacilitiesPage: React.FC = () => {
   const fetchFacilities = async () => {
     setLoading(true);
     try {
-      const res = await eventApi.getFacilities();
+      const res = await eventApi.getFacilities(undefined, 1, 1000);
       if (res.success) {
         setFacilities(res.data || []);
       }
@@ -61,7 +61,10 @@ export const FacilitiesPage: React.FC = () => {
       const payload = {
         facilityId: editingFacility ? editingFacility.facilityId : 0,
         facilityName: data.facilityName,
-        userId: userId > 0 ? userId : null
+        createdBy: editingFacility ? (editingFacility.createdBy || userId) : userId,
+        createdFrom: editingFacility ? (editingFacility.createdFrom || 'WebUI') : 'WebUI',
+        updateBy: userId,
+        updatedFrom: 'WebUI'
       };
 
       const res = await eventApi.addEditFacility(payload);

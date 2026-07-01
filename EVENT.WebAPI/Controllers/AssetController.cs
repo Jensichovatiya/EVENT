@@ -28,6 +28,13 @@ namespace EVENT.WebAPI.Controllers
             return StatusCode(result.StatusCode, result);
         }
 
+        [HttpGet("asset-types/{id}")]
+        public async Task<IActionResult> GetAssetTypeById(long id)
+        {
+            var result = await _assetRepository.GetAssetTypeByIdAsync(id);
+            return StatusCode(result.StatusCode, result);
+        }
+
         /// <summary>
         /// POST api/asset-types
         /// Accepts multipart/form-data with optional IconFile.
@@ -50,8 +57,8 @@ namespace EVENT.WebAPI.Controllers
         [HttpDelete("asset-types/{id}")]
         public async Task<IActionResult> DeleteAssetType(long id)
         {
-            // Uses soft-delete if SP supports it, otherwise returns 400
-            return StatusCode(400, new ApiResponseModel<object> { Success = false, StatusCode = 400, Message = "Delete asset-type not implemented via SP." });
+            var result = await _assetRepository.DeleteAssetTypeAsync(id);
+            return StatusCode(result.StatusCode, result);
         }
 
         // ── Assets ─────────────────────────────────────────────────────────────

@@ -161,6 +161,110 @@ namespace EVENT.DAL.Repository
             }
         }
 
+        public async Task<ApiResponseModel<AssetTypeResponse>> GetAssetTypeByIdAsync(long assetTypeId)
+        {
+            try
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@AssetTypeId", assetTypeId }
+                };
+
+                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_GetAssetTypeById", parameters);
+
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    DataRow row = ds.Tables[0].Rows[0];
+                    int status = Convert.ToInt32(row["ResultStatus"]);
+                    string message = Convert.ToString(row["ResultMessage"]) ?? "";
+
+                    if (status == 200)
+                    {
+                        var data = ds.Tables.Count > 1 && ds.Tables[1].Rows.Count > 0
+                            ? DataRowToObject.CreateItemFromRow<AssetTypeResponse>(ds.Tables[1].Rows[0])
+                            : null;
+
+                        return new ApiResponseModel<AssetTypeResponse>
+                        {
+                            Success = true,
+                            StatusCode = 200,
+                            Message = "Asset type retrieved successfully.",
+                            Data = data
+                        };
+                    }
+
+                    return new ApiResponseModel<AssetTypeResponse>
+                    {
+                        Success = false,
+                        StatusCode = status,
+                        Message = message
+                    };
+                }
+
+                return new ApiResponseModel<AssetTypeResponse>
+                {
+                    Success = false,
+                    StatusCode = 404,
+                    Message = "Asset type not found."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel<AssetTypeResponse>
+                {
+                    Success = false,
+                    StatusCode = 500,
+                    Message = ex.Message,
+                    Errors = new List<string> { ex.StackTrace ?? "" }
+                };
+            }
+        }
+
+        public async Task<ApiResponseModel<string>> DeleteAssetTypeAsync(long assetTypeId)
+        {
+            try
+            {
+                var parameters = new Dictionary<string, object>
+                {
+                    { "@AssetTypeId",  assetTypeId }
+                };
+
+                DataSet ds = await _gf.GetDataSetFromSPAsync("USP_DeleteAssetType", parameters);
+
+                if (ds != null && ds.Tables.Count > 0 && ds.Tables[0].Rows.Count > 0)
+                {
+                    DataRow row    = ds.Tables[0].Rows[0];
+                    int    status  = Convert.ToInt32(row["ResultStatus"]);
+                    string message = Convert.ToString(row["ResultMessage"]) ?? "";
+
+                    return new ApiResponseModel<string>
+                    {
+                        Success    = status == 200,
+                        StatusCode = status,
+                        Message    = message,
+                        Data       = status == 200 ? "Asset Type deleted successfully." : null
+                    };
+                }
+
+                return new ApiResponseModel<string>
+                {
+                    Success    = false,
+                    StatusCode = 400,
+                    Message    = "Failed to delete asset type."
+                };
+            }
+            catch (Exception ex)
+            {
+                return new ApiResponseModel<string>
+                {
+                    Success    = false,
+                    StatusCode = 500,
+                    Message    = ex.Message,
+                    Errors     = new List<string> { ex.StackTrace ?? "" }
+                };
+            }
+        }
+
         public async Task<ApiResponseModel<AssetResponse>> AddEditAssetAsync(AssetRequest request)
         {
             try

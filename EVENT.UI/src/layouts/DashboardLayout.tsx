@@ -131,6 +131,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
           { text: 'Create Event', icon: <AddCircleIcon />, path: ROUTES.EVENT_CREATE },
           { text: 'Venue Facilities', icon: <CategoryIcon />, path: ROUTES.FACILITIES },
           { text: 'Event Assets',      icon: <BusinessIcon />, path: ROUTES.ASSETS },
+          { text: 'Asset Types',       icon: <BusinessIcon />, path: ROUTES.ASSET_TYPES },
           { text: 'Event Components',   icon: <WidgetsIcon />,  path: ROUTES.COMPONENTS },
           { text: 'Bookings', icon: <ReceiptLongIcon />, path: ROUTES.BOOKINGS },
           { text: 'Invoices', icon: <ReceiptLongIcon />, path: ROUTES.INVOICES },

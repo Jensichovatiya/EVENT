@@ -167,6 +167,14 @@ export const AppRoutes: React.FC = () => {
         }
       />
       <Route
+        path={ROUTES.FACILITIES}
+        element={
+          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ORGANIZER]}>
+            <FacilitiesPage />
+          </Guard>
+        }
+      />
+      <Route
         path={ROUTES.ASSETS}
         element={
           <Guard>
@@ -209,7 +217,7 @@ export const AppRoutes: React.FC = () => {
       <Route
         path={ROUTES.ASSET_TYPES}
         element={
-          <Guard allowedRoles={[ROLES.SUPER_ADMIN]}>
+          <Guard allowedRoles={[ROLES.SUPER_ADMIN, ROLES.ORGANIZER]}>
             <AssetTypesPage />
           </Guard>
         }

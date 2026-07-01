@@ -203,9 +203,13 @@ app.UseCors(x => x.AllowAnyMethod().AllowAnyHeader().SetIsOriginAllowed(origin =
 
 
 
-if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ApplicationSettings:CountryFlagFolderName"].ToString())));
+if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ApplicationSettings:CountryFlagFolderName"].ToString())))
 {
     Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ApplicationSettings:CountryFlagFolderName"].ToString()));
+}
+
+if (!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ApplicationSettings:RootFolderName"].ToString())))
+{
     Directory.CreateDirectory(Path.Combine(Directory.GetCurrentDirectory(), builder.Configuration["ApplicationSettings:RootFolderName"].ToString()));
 }
 

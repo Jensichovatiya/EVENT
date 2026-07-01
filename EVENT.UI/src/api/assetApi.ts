@@ -25,6 +25,10 @@ export const assetApi = {
     return fetchClient('/asset-types');
   },
 
+  getAssetTypeById: (id: number): Promise<ApiResponseModel<AssetType>> => {
+    return fetchClient(`/asset-types/${id}`);
+  },
+
   // POST /api/asset-types — multipart: model (JSON string) + optional IconFile
   addEditAssetType: async (data: any, iconFile?: File | null): Promise<ApiResponseModel<AssetType>> => {
     const fd = new FormData();
@@ -47,6 +51,12 @@ export const assetApi = {
       throw new Error((err as any)?.message || 'Failed to save asset type.');
     }
     return res.json();
+  },
+
+  deleteAssetType: (id: number): Promise<ApiResponseModel<string>> => {
+    return fetchClient(`/asset-types/${id}`, {
+      method: 'DELETE',
+    });
   },
 
   // ── Allocation ───────────────────────────────────────────────────────────

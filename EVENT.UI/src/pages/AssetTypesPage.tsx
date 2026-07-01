@@ -7,12 +7,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import ImageIcon from '@mui/icons-material/Image';
 import LinkIcon from '@mui/icons-material/Link';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { assetApi } from '../api/assetApi';
 import DashboardLayout from '../layouts/DashboardLayout';
 import AppTable from '../components/AppTable';
 import AppLoader from '../components/AppLoader';
 import AppModal from '../components/AppModal';
 import AppInput from '../components/AppInput';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 
@@ -31,19 +33,12 @@ export const AssetTypesPage: React.FC = () => {
   const [openModal, setOpenModal] = useState(false);
   const [editingType, setEditingType] = useState<any | null>(null);
   const [iconPreview, setIconPreview] = useState<string>('');
-  const [iconMode, setIconMode] = useState<'url' | 'upload'>('url');
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [deleteTarget, setDeleteTarget] = useState<any | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
-  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = useForm();
-  const watchedIconUrl = watch('iconUrl', '');
-
-  // Preview the URL typed by user
-  useEffect(() => {
-    if (iconMode === 'url') {
-      setIconPreview(watchedIconUrl || '');
-    }
-  }, [watchedIconUrl, iconMode]);
+  const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const fetchAssetTypes = async () => {
     setLoading(true);
@@ -63,27 +58,50 @@ export const AssetTypesPage: React.FC = () => {
     fetchAssetTypes();
   }, []);
 
+  // Synchronize form values when opening/closing the modal to ensure pre-filling works correctly
+  useEffect(() => {
+    const loadDetails = async () => {
+      if (editingType) {
+        try {
+          const res = await assetApi.getAssetTypeById(editingType.assetTypeId);
+          if (res.success && res.data) {
+            const data = res.data;
+            const existingIcon = data.iconUrl || '';
+            setIconPreview(existingIcon);
+            reset({
+              typeName: data.typeName || data.assetTypeName || '',
+              assetTypeRId: data.assetTypeRId || '',
+              description: data.description || '',
+            });
+          }
+        } catch (err) {
+          toast.error('Failed to fetch asset type details.');
+        }
+      }
+    };
+
+    if (openModal) {
+      if (editingType) {
+        loadDetails();
+      } else {
+        setIconPreview('');
+        reset({
+          typeName: '',
+          assetTypeRId: '',
+          description: '',
+        });
+      }
+      setUploadedFile(null);
+    }
+  }, [openModal, editingType, reset]);
+
   const handleOpenAdd = () => {
     setEditingType(null);
-    setIconPreview('');
-    setUploadedFile(null);
-    setIconMode('url');
-    reset({ typeName: '', assetTypeRId: '', description: '', iconUrl: '' });
     setOpenModal(true);
   };
 
   const handleOpenEdit = (type: any) => {
     setEditingType(type);
-    const existingIcon = type.iconUrl || '';
-    setIconPreview(existingIcon);
-    setUploadedFile(null);
-    setIconMode('url');
-    reset({
-      typeName: type.typeName || type.assetTypeName || '',
-      assetTypeRId: type.assetTypeRId || '',
-      description: type.description || '',
-      iconUrl: existingIcon,
-    });
     setOpenModal(true);
   };
 
@@ -114,7 +132,7 @@ export const AssetTypesPage: React.FC = () => {
         assetTypeName: data.typeName,
         typeName:     data.typeName,
         description:  data.description,
-        iconUrl:      data.iconUrl || '',   // kept if no new file selected
+        iconUrl:      iconPreview || '',   // kept if no new file selected
         createdBy:    editingType ? editingType.createdBy   : userEmail,
         createdFrom:  editingType ? editingType.createdFrom : 'WebUI',
         updatedBy:    userEmail,
@@ -131,6 +149,25 @@ export const AssetTypesPage: React.FC = () => {
       fetchAssetTypes();
     } catch (err: any) {
       toast.error(err.message || 'Failed to save asset type.');
+    }
+  };
+
+  const handleDeleteType = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await assetApi.deleteAssetType(deleteTarget.assetTypeId);
+      if (res.success) {
+        toast.success(res.message || 'Asset Type deleted successfully.');
+        setDeleteTarget(null);
+        fetchAssetTypes();
+      } else {
+        toast.error(res.message || 'Failed to delete asset type.');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Unexpected error occurred.');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -169,6 +206,9 @@ export const AssetTypesPage: React.FC = () => {
           <IconButton size="small" onClick={() => handleOpenEdit(row)}>
             <EditIcon fontSize="small" style={{ color: '#10b981' }} />
           </IconButton>
+          <IconButton size="small" onClick={() => setDeleteTarget(row)}>
+            <DeleteOutlineIcon fontSize="small" style={{ color: '#ef4444' }} />
+          </IconButton>
         </Box>
       )
     }
@@ -197,7 +237,7 @@ export const AssetTypesPage: React.FC = () => {
         <AppTable
           columns={columns}
           data={assetTypes}
-          searchKey="typeName"
+          searchKey="assetTypeName"
           searchPlaceholder="Search type by name..."
         />
       )}
@@ -235,27 +275,15 @@ export const AssetTypesPage: React.FC = () => {
               Asset Type Icon / Image
             </Typography>
 
-            {/* Toggle: URL or Upload */}
-            <Box sx={{ display: 'flex', gap: 1, mb: 1.5 }}>
-              <Button
-                size="small"
-                variant={iconMode === 'url' ? 'contained' : 'outlined'}
-                startIcon={<LinkIcon />}
-                onClick={() => setIconMode('url')}
-                sx={{ textTransform: 'none', borderRadius: 6, fontSize: '0.75rem' }}
-              >
-                Image URL
-              </Button>
-              <Button
-                size="small"
-                variant={iconMode === 'upload' ? 'contained' : 'outlined'}
-                startIcon={<ImageIcon />}
-                onClick={() => { setIconMode('upload'); fileInputRef.current?.click(); }}
-                sx={{ textTransform: 'none', borderRadius: 6, fontSize: '0.75rem' }}
-              >
-                Upload Image
-              </Button>
-            </Box>
+            <Button
+              size="small"
+              variant="contained"
+              startIcon={<ImageIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              sx={{ textTransform: 'none', borderRadius: 6, fontSize: '0.75rem', mb: 1.5 }}
+            >
+              Upload Image
+            </Button>
 
             {/* Hidden file input */}
             <input
@@ -266,18 +294,10 @@ export const AssetTypesPage: React.FC = () => {
               onChange={handleFileChange}
             />
 
-            {/* URL input (shown when mode is url) */}
-            {iconMode === 'url' && (
-              <AppInput
-                label="Icon URL (https://...)"
-                register={register('iconUrl')}
-                placeholder="https://example.com/booth-icon.png"
-              />
-            )}
-
             {/* Preview Box */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1.5 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 1 }}>
               <Box
+                onClick={() => fileInputRef.current?.click()}
                 sx={{
                   width: 72,
                   height: 72,
@@ -289,6 +309,11 @@ export const AssetTypesPage: React.FC = () => {
                   justifyContent: 'center',
                   overflow: 'hidden',
                   flexShrink: 0,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    borderColor: EP.primary,
+                    bgcolor: EP.primarySoft + '44'
+                  }
                 }}
               >
                 {iconPreview ? (
@@ -317,6 +342,15 @@ export const AssetTypesPage: React.FC = () => {
           </Box>
         </Box>
       </AppModal>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteType}
+        title="Delete Asset Type"
+        message={`Are you sure you want to delete "${deleteTarget?.typeName || deleteTarget?.assetTypeName || 'this asset type'}"? This action cannot be undone.`}
+        confirmText={deleting ? 'Deleting…' : 'Delete'}
+      />
     </DashboardLayout>
   );
 };
